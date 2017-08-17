@@ -234,6 +234,7 @@ def compute_velocity(cx, cy, p, T, dt, signal):
 
     #Compuete the speeds 'vx' and 'vy' for the feed forward such the resultant speed is constant
     vx_ff = (Vd * (vx / v)) * signal
+    vy_ff = (Vd * (vy / v)) * signal
 
     #Compute the controller signals
     ux = Kp * (xref - x_n) + vx_ff
