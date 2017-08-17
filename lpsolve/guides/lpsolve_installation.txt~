@@ -1,0 +1,50 @@
+
+Author: Adriano M C Rezende
+Date: July 2017
+
+-Installation guide for lpsolve with python
+-Linux Ubuntu 14.04
+-ROS Indigo
+
+-Refference guide:
+http://lpsolve.sourceforge.net/5.5/
+
+-First install some lpsolve librarries:
+sudo apt-get install lp-solve lp-solve-doc
+sudo apt-get install liblpsolve55-dev
+
+-Paste the following linecommand on ~/.bashrc and save:
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/lp_solve/
+-Open another terminal or execute on the current terminal:
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib/lp_solve/
+
+-Downloading files:
+-Go to the page:
+https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.0.15/
+-Download the file that contain the files for lpsolve:
+lp_solve_5.5.0.15_source.tar.gz
+-Extract the files to obtain the folder:
+lp_solve_5.5
+-Go to the page:
+https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.5/
+-Download the file that contain the extras files for python:
+lp_solve_5.5.2.5_Python_source.tar.gz
+-Extract the files to obtain another folder with the same name:
+lp_solve_5.5
+
+-Go to the second folder lp_solve_5.5 and copy the files inside ./extra/Python to the first folder lp_solve_5.5
+-In the first folder lp_solve_5.5 open the file setup.py
+-Change the line:
+libraries = ["lpsolve55"]
+-To:
+libraries = ["/usr/lib/lp_solve/lpsolve55"])
+-Now, still in the ffirst folder lp_solve_5.5 run: (maybe use sudo, I dont remember)
+python setup.py install
+
+-Now you 
+
+
+
+
+
+

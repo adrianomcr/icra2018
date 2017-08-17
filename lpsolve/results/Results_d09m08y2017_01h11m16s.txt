@@ -1,0 +1,40 @@
+Nodes: 12
+Robots: 2
+Variables: 277   (264 integers and 13 reals)
+Constraints: 130   (38 equalities and 92 inequalities)
+
+----- Optimal solution found -----
+Objective = 8.66128950424
+
+Choosen edges for robot 1:
+[[1 4 5 6 7]
+ [5 7 4 1 6]]
+
+Choosen edges for robot 2:
+[[ 2  3  8  9 10 11 12]
+ [ 3 11  2 12  8  9 10]]
+
+Time task for robot 1: 8.47384984695
+Time task for robot 2: 8.66128950424
+
+Elapsed computation time: 9.70640015602 s
+
+
+
+
+
+
+
+Used points:
+p1 = [ 0.88 -0.06]
+p2 = [-2.39 -0.81]
+p3 = [-1.78 -0.46]
+p4 = [ 0.61  1.15]
+p5 = [ 2.62 -1.25]
+p6 = [-0.08  1.08]
+p7 = [ 0.65  1.84]
+p8 = [-2.45 -0.37]
+p9 = [-0.79  0.75]
+p10 = [-2.47  1.08]
+p11 = [ 0.33 -1.06]
+p12 = [-2.1   1.14]
