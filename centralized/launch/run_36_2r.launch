@@ -12,11 +12,10 @@
 <node pkg = "centralized" name = "config_node" type = "config_2r.py" output="screen">
 </node>
 
-<!--node pkg = "probabilistica" name = "move_around" type = "move_around.py" output="screen">
-</node-->
-
-<node pkg = "map_server" name = "map_server" type = "map_server" args="$(find centralized)/maps/map_36.yaml" output="screen">
+<node pkg = "map_server" name = "map_server" type = "map_server" args="$(find centralized)/maps/map_36_GVD.yaml" output="screen">
 </node>
 
+<node pkg = "centralized" name = "launcher" type = "spawn_robots.py">
+</node>
 
 </launch>

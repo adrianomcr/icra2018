@@ -45,7 +45,6 @@ laserVec = [1 for i in range(270)]
 def read_graph():
 
     global n, nodes, C, PathM, w_s, PolC
-    print ('1')
     rp = rospkg.RosPack()
     path = rp.get_path('centralized')
     path = path + '/graph/Graph_data_36_meters.mat'
@@ -133,13 +132,12 @@ def getCoefs(edge,PolC):
 # Function to get the number of a edge given two adjacent nodes
 def getEdge(i,j,PolC):
 
-    print 'i = ', i
-    print 'j = ', j
+    #print 'i = ', i
+    #print 'j = ', j
 
     for k in range(len(PolC[0])):
         [fr, to, cx, cy] = getCoefs(k,PolC)
         if (fr == i and to == j):
-            print 'AA'
             return (k, 1)
         elif (fr == j and to == i):
             return (k, -1)
@@ -292,6 +290,11 @@ def follow_graph():
     #----------
     Hole_path = [1, 2, 14, 13, 12, 10, 11, 35, 9, 8, 36, 34, 15, 33, 16, 17, 18, 19, 20, 32, 21, 22, 31, 29, 28, 30, 24,
                  25, 26, 27, 23, 7, 3, 4, 5, 6]
+    Hole_path = [1, 2, 14, 13, 12, 10, 11, 35, 9, 8, 36, 34, 15, 33, 16, 17, 18, 19, 20, 32, 21, 22, 31, 29, 28, 30, 24,
+                 25, 26, 27, 23, 7, 3, 2, 4, 5, 6]
+    Hole_path = [1, 2, 14, 15, 33, 15, 16, 17, 18, 19, 18, 13, 14, 13, 12, 34, 12, 10, 11, 10, 9, 35, 9, 8, 36, 8, 7, 23, 22, 31,
+     22, 21, 29, 16, 17, 20, 32, 20, 21, 29, 28, 30, 28, 24, 25, 27, 25, 26, 25, 24, 23, 7, 3, 4, 6, 4, 5, 4, 3, 2, 1]
+    Hole_path = [1, 2, 3, 4, 5, 4, 6, 4, 3, 7, 8, 9, 10, 11, 10, 12, 13, 18, 17, 16, 15, 14, 13, 14, 2, 1]
 
     time_start = 0
 
@@ -319,12 +322,14 @@ def follow_graph():
     while (not rospy.is_shutdown()):
 
         count = count + 1
+
         time = count / float(freq)
 
+        print 'Moving from i =', i, 'to', 'j =', j
         print 'time = ', time
-        print 'task time: ', time - time_start, '/', T
-        print '                       moving from i = ', i
-        print '                                to j = ', j
+        print 'task time: ', time - time_start, '/', T, '\n'
+        #print '                       moving from i = ', i
+        #print '                                to j = ', j
 
 
         if(time-time_start > T+1/freq):
@@ -346,6 +351,9 @@ def follow_graph():
                 new_path = 1
             else:
                 print'\nNodes search completed\n'
+                vel.linear.x = 0
+                vel.angular.z = 0
+                pub_stage.publish(vel)
                 break
         if(new_path == 1):
             i = pathNode.pop(0)
@@ -396,6 +404,7 @@ def follow_graph():
 
 # Initial function
 if __name__ == '__main__':
+
 
     rp = rospkg.RosPack()
     path = rp.get_path('centralized')

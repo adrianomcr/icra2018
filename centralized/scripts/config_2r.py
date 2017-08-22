@@ -138,9 +138,9 @@ def send_marker_to_rviz():
     mark_pose1.scale.y = 0.22
     mark_pose1.scale.z = 0.06
     mark_pose1.color.a = 1.0
-    mark_pose1.color.r = 0.0
+    mark_pose1.color.r = 1.0
     mark_pose1.color.g = 0.0
-    mark_pose1.color.b = 1.0
+    mark_pose1.color.b = 0.0
     mark_pose1.pose.position.x = x_n1
     mark_pose1.pose.position.y = y_n1
     mark_pose1.pose.position.z = 0.0
@@ -184,7 +184,6 @@ def config():
 
     pub_pose = rospy.Publisher("/marker_pose", Marker, queue_size=1)
     pub_pose1 = rospy.Publisher("/marker_pose1", Marker, queue_size=1)
-    pub_particles = rospy.Publisher("/visualization_marker_array", MarkerArray, queue_size=1)
     rospy.init_node("config")
     rospy.Subscriber("/robot_0/base_pose_ground_truth", Odometry, callback_pose)
     rospy.Subscriber("/robot_1/base_pose_ground_truth", Odometry, callback_pose1)

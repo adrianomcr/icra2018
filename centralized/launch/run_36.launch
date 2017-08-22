@@ -20,6 +20,9 @@
 <node pkg = "map_server" name = "map_server" type = "map_server" args="$(find centralized)/maps/map_36_GVD.yaml" output="screen">
 </node>
 
+<!--node pkg = "centralized" name = "follow_graph" type = "follow_path.py" output="screen" launch-prefix="xterm -e">
+</node-->
+
 <node pkg = "centralized" name = "follow_graph" type = "follow_path.py" output="screen">
 </node>
 
