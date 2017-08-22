@@ -3,9 +3,9 @@ close all;
 clear all; clc;
 
 
-load('./../sourcecode/pythonapplication1/PythonApplication1/GraphMap8_2.mat');
+load('./pixel_files/GraphMap8_2.mat');
 
-fig = imread('./../sourcecode/pythonapplication1/PythonApplication1/Map8_2.jpg');
+fig = imread('./pixel_files/Map8_2.jpg');
 
 
 
