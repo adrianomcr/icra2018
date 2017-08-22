@@ -45,6 +45,7 @@ laserVec = [1 for i in range(270)]
 def read_graph():
 
     global n, nodes, C, PathM, w_s, PolC
+    print ('1')
     rp = rospkg.RosPack()
     path = rp.get_path('centralized')
     path = path + '/graph/Graph_data_36_meters.mat'
