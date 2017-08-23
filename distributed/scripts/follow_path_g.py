@@ -94,7 +94,7 @@ def getNodePath(i,j,PathM):
     return (pathNode)
 # ----------  ----------  ----------  ----------  ----------
 
-# Function to get the polynomial coeficients
+# Function to get the polynomial coefficients
 def getCoefs(edge,PolC):
     P = PolC[0][edge]
 
