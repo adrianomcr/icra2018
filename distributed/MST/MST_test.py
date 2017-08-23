@@ -6,14 +6,16 @@ from scipy.sparse import csr_matrix
 from scipy.sparse.csgraph import minimum_spanning_tree
 import numpy as np
 import pylab
+import os
 
 # Function to read the data of the graph
 def read_graph():
 
     global n, nodes, C, Ccom, MapEdge, PathM, w_s, PolC
     rp = rospkg.RosPack()
-    path = rp.get_path('distributed')
-    path = path + '/graph/Graph_data_36_meters.mat'
+    dir_path=os.getcwd()
+    path = dir_path + '/..'
+    path=path+'/graph/Graph_data_36_meters.mat'
     mat = scipy.io.loadmat(path)
     g = mat['graph']
     # Number of nodes
