@@ -3,9 +3,9 @@ close all;
 clear all; clc;
 
 
-load('./../sourcecode/pythonapplication1/PythonApplication1/GraphMap8_2.mat');
+load('./pixel_files/GraphMap8_2.mat');
 
-fig = imread('./../sourcecode/pythonapplication1/PythonApplication1/Map8_2.jpg');
+fig = imread('./pixel_files/Map8_2.jpg');
 
 
 
@@ -30,7 +30,7 @@ axis equal
 %Adiciona o caminho da biblioteca de grafos
 addpath('./graphutils')
 
-graph = struct('number_nodes',[],'node_list',[],'edge_matrix',[],'path_matrix',[],'w_s',[],'Pol_coefs',[]);
+graph = struct('number_nodes',[],'node_list',[],'edge_matrix',[],'complete_edge_matrix',[],'map_edge_matrix',[],'path_matrix',[],'w_s',[],'Pol_coefs',[]);
 
 graph.w_s = w_s;
 graph.number_nodes = 36;
@@ -177,7 +177,7 @@ end
 
 
 
-
+complete_edge_matrix = zeros(graph.number_nodes,graph.number_nodes);
 for i = 1:1:graph.number_nodes
     [success, CC, EE] = search_Dijkstra(i, 0, G);
     for j = 1:1:graph.number_nodes
@@ -185,10 +185,20 @@ for i = 1:1:graph.number_nodes
             p = path;
             p.path = CC.container(j).traj_from_start;
             Paths(i,j) = p;
+            complete_edge_matrix(i,j) = CC.container(j).cost_from_start;
         end
     end
 end
+graph.complete_edge_matrix = complete_edge_matrix;
 
+
+
+map_edge_matrix = -1*ones(graph.number_nodes,graph.number_nodes);
+for k = 1:1:length(Pol_coefs)
+    map_edge_matrix(Pol_coefs(k).from,Pol_coefs(k).to) = k;
+    map_edge_matrix(Pol_coefs(k).to,Pol_coefs(k).from) = k;
+end
+graph.map_edge_matrix = map_edge_matrix;
 
 
 graph.path_matrix = Paths;
