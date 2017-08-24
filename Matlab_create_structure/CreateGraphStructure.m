@@ -27,7 +27,7 @@ colormap gray
 axis equal
 
 
-%Adiciona o caminho da biblioteca de grafos
+%Adds the path to the graph library
 addpath('./graphutils')
 
 graph = struct('number_nodes',[],'node_list',[],'edge_matrix',[],'complete_edge_matrix',[],'map_edge_matrix',[],'path_matrix',[],'w_s',[],'Pol_coefs',[]);
@@ -156,7 +156,7 @@ E_pol = E_pol + E_pol';
 
 
 % Create container
-G = container_set(vertex.empty()); %Slide 04-PRM_RRT - pag 6 - linha 1
+G = container_set(vertex.empty());
 
 
 for i = 1:1:graph.number_nodes

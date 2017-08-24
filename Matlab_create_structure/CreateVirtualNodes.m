@@ -8,12 +8,16 @@
 close all;
 clear all; clc;
 
+%Adds the path to the graph library
+addpath('./graphutils')
+
 fig = imread('./pixel_files/Map8_2.jpg');
 load('./output_structure/Graph_data_36_meters.mat','graph')
 number_nodes = graph.number_nodes;
 node_list = graph.node_list;
 edge_matrix = graph.edge_matrix;
 complete_edge_matrix = graph.complete_edge_matrix;
+map_edge_matrix = graph.map_edge_matrix;
 path_matrix = graph.path_matrix;
 w_s = graph.w_s;
 Pol_coefs = graph.Pol_coefs;
@@ -110,7 +114,7 @@ end
 
 
 % Create container
-G = container_set(vertex.empty()); %Slide 04-PRM_RRT - pag 6 - linha 1
+G = container_set(vertex.empty());
 
 number_nodes = number_nodes + length(virtual_node_list(:,1));
 node_list = [node_list; virtual_node_list];
@@ -232,45 +236,45 @@ save('./output_structure/Graph_data_36_meters_virtuals.mat','graph2')
 
 %%
 
-
-%Plotting the graph with the partioned polynomials
-figure(2)
-x = linspace(w_s(1),w_s(2),length(fig(1,:,1)));
-y = linspace(w_s(3),w_s(4),length(fig(:,1,1)));
-[X,Y] = meshgrid(x,y);
-H = pcolor(X,Y,image);
-H.LineStyle = 'none';
-colormap gray
-axis equal
-hold on
-for k = 1:1:length(Pol_coefs)
-    cx = Pol_coefs(k).coef_x;
-    cy = Pol_coefs(k).coef_y;
-    xp = [];
-    yp = [];
-    for t = 0:0.01:1
-        xp(end+1) = cx(1)*t^5+cx(2)*t^4+cx(3)*t^3+cx(4)*t^2+cx(5)*t^1+cx(6)*t^0;
-        yp(end+1) = cy(1)*t^5+cy(2)*t^4+cy(3)*t^3+cy(4)*t^2+cy(5)*t^1+cy(6)*t^0;
-    end
-%     plot(xp,yp,'b','LineWidth',2)
-    if(mod(k,2) == 1)
-        plot(xp,yp,'b','LineWidth',2)
-    else
-        plot(xp,yp,'c','LineWidth',2)
-    end
-end
-% plot(node_list(:,1),node_list(:,2),'*r','LineWidth',2)
-% plot(node_list(:,1),node_list(:,2),'or','LineWidth',2)
-plot(node_list(1:36,1),node_list(1:36,2),'*r','LineWidth',2)
-plot(node_list(1:36,1),node_list(1:36,2),'or','LineWidth',2)
-plot(node_list(37:end,1),node_list(37:end,2),'*g','LineWidth',2)
-plot(node_list(37:end,1),node_list(37:end,2),'og','LineWidth',2)
-for k = 1:1:length(node_list)
-%     text(node_list(k,1)+0.05,node_list(k,2)+0.05,sprintf('%d',k),'FontSize',10,'Color',[1 0 0])
-    if(k<36)
-        text(node_list(k,1)+0.05,node_list(k,2)+0.05,sprintf('%d',k),'FontSize',10,'Color',[1 0 0])
-    else
-        text(node_list(k,1)+0.05,node_list(k,2)+0.05,sprintf('%d',k),'FontSize',10,'Color',[0 1 0])
-    end
-end
-hold off
+% 
+% %Plotting the graph with the partioned polynomials
+% figure(2)
+% x = linspace(w_s(1),w_s(2),length(fig(1,:,1)));
+% y = linspace(w_s(3),w_s(4),length(fig(:,1,1)));
+% [X,Y] = meshgrid(x,y);
+% H = pcolor(X,Y,image);
+% H.LineStyle = 'none';
+% colormap gray
+% axis equal
+% hold on
+% for k = 1:1:length(Pol_coefs)
+%     cx = Pol_coefs(k).coef_x;
+%     cy = Pol_coefs(k).coef_y;
+%     xp = [];
+%     yp = [];
+%     for t = 0:0.01:1
+%         xp(end+1) = cx(1)*t^5+cx(2)*t^4+cx(3)*t^3+cx(4)*t^2+cx(5)*t^1+cx(6)*t^0;
+%         yp(end+1) = cy(1)*t^5+cy(2)*t^4+cy(3)*t^3+cy(4)*t^2+cy(5)*t^1+cy(6)*t^0;
+%     end
+% %     plot(xp,yp,'b','LineWidth',2)
+%     if(mod(k,2) == 1)
+%         plot(xp,yp,'b','LineWidth',2)
+%     else
+%         plot(xp,yp,'c','LineWidth',2)
+%     end
+% end
+% % plot(node_list(:,1),node_list(:,2),'*r','LineWidth',2)
+% % plot(node_list(:,1),node_list(:,2),'or','LineWidth',2)
+% plot(node_list(1:36,1),node_list(1:36,2),'*r','LineWidth',2)
+% plot(node_list(1:36,1),node_list(1:36,2),'or','LineWidth',2)
+% plot(node_list(37:end,1),node_list(37:end,2),'*g','LineWidth',2)
+% plot(node_list(37:end,1),node_list(37:end,2),'og','LineWidth',2)
+% for k = 1:1:length(node_list)
+% %     text(node_list(k,1)+0.05,node_list(k,2)+0.05,sprintf('%d',k),'FontSize',10,'Color',[1 0 0])
+%     if(k<36)
+%         text(node_list(k,1)+0.05,node_list(k,2)+0.05,sprintf('%d',k),'FontSize',10,'Color',[1 0 0])
+%     else
+%         text(node_list(k,1)+0.05,node_list(k,2)+0.05,sprintf('%d',k),'FontSize',10,'Color',[0 1 0])
+%     end
+% end
+% hold off
