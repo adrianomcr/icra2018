@@ -128,6 +128,7 @@ for k = 1:1:number_virtual_nodes
                 E(k,k2) = edge_matrix(i,j)/2+edge_matrix(i,m)/2;
                 n_edges = n_edges + 1;
                 Ed_virtual_matrix(n_edges) = struct('from',k,'to',k2,'coef_x',[],'coef_y',[],'cost',E(k,k2));
+                %Compute polynomial
             end
         end
     end
@@ -142,6 +143,8 @@ for k = 1:1:number_virtual_nodes
                 E(k,k2) = edge_matrix(i,j)/2+edge_matrix(j,m)/2;
                 n_edges = n_edges + 1;
                 Ed_virtual_matrix(n_edges) = struct('from',k,'to',k2,'coef_x',[],'coef_y',[],'cost',E(k,k2));
+                COMPUTE_POL = COMPUTE_POL + 1;
+                %Compute polynomial
             end
         end
     end
