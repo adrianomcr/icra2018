@@ -115,7 +115,7 @@ def write_results_to_file(*args, **kwargs):
         mystr = '!!!!! Optimal solution NOT found !!!!!'
         file_results.write(mystr)
         #print 'Return code', solvestat
-        mystr = 'Return code ' + solvestat
+        mystr = 'Return code ' + str(solvestat)
         file_results.write(mystr)
 
     # elapsed = time.time() - t
@@ -152,12 +152,12 @@ def write_results_to_file(*args, **kwargs):
 
 #def execute_lp():
 
-n = 14 #number of nodes
+n = 20 #number of nodes
 m = n * (n - 1) #number of edges
 R = 2 #number of robots
 depots = {0: [0],
           1: [0, 1],
-          2: [0, 1, 2],
+          2: [0, 1, 6],
           3: [0, 1, 2, 3],
           }
 speeds = {0: [1],
@@ -597,7 +597,7 @@ int_var = range(1, R*m + 1, 1)
 # ----------  ----------  ----------
 
 # Auto scale flag
-scalemode = 1
+scalemode = 0
 # ----------  ----------  ----------
 
 # Definition of cost function operand (min or max)
@@ -628,6 +628,7 @@ print ''
 print 'LP solution started ...'
 solvestat = lpsolve('solve', lp)
 obj = lpsolve('get_objective', lp)
+x = -1
 x = lpsolve('get_variables', lp)[0]
 
 lpsolve('delete_lp', lp)

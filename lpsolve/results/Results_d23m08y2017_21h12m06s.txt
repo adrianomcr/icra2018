@@ -1,0 +1,6 @@
+Nodes: 16
+Robots: 3
+Variables: 737   (720 integers and 17 reals)
+Constraints: 226   (67 equalities and 159 inequalities)
+
+!!!!! Optimal solution NOT found !!!!!
