@@ -12,7 +12,7 @@ clear all; clc;
 addpath('./graphutils')
 
 fig = imread('./pixel_files/Map8_2.jpg');
-load('./output_structure/Original_graph_36.mat','graph')
+load('./output_structure/Graph_data_36_meters.mat','graph')
 number_nodes = graph.number_nodes;
 node_list = graph.node_list;
 edge_matrix = graph.edge_matrix;
@@ -116,6 +116,8 @@ n_edges = 0;
 for k = 1:1:number_virtual_nodes
     i = Pol_coefs(k).from;
     j = Pol_coefs(k).to;
+    cx = Pol_coefs(k).coef_x;
+    cy = Pol_coefs(k).coef_y;
     
 
     %Finding neigbohrs in the "from node" side
@@ -133,8 +135,7 @@ for k = 1:1:number_virtual_nodes
                 %Compute polynomial
                 %x from 0.5 of k to 0or1 of k
                 %x from 0or1 of k2 to 0.5 of k2
-                cx = Pol_coefs(k).coef_x;
-                cy = Pol_coefs(k).coef_y;
+                
                 x = [];
                 y = [];
                 if(graph.Pol_coefs(k).from == i)
@@ -147,14 +148,7 @@ for k = 1:1:number_virtual_nodes
                     y(end+1) = cy(1)*p^5+cy(2)*p^4+cy(3)*p^3+cy(4)*p^2+cy(5)*p^1+cy(6)*p^0;
                 end
                 
-%                 figure(1)
-%                 hold on
-%                 plot(x,y,'y','LineWidth',4);
-%                 pause();
-%                 figure(2)
                 
-                cx = Pol_coefs(k2).coef_x;
-                cy = Pol_coefs(k2).coef_y;
                 if(graph.Pol_coefs(k2).from == i)
                     p1 = 0:0.01:0.5;
                 elseif(graph.Pol_coefs(k2).to == i)
@@ -170,13 +164,8 @@ for k = 1:1:number_virtual_nodes
                     A = [A; p^5 p^4 p^3 p^2 p^1 p^0];
                 end
                 
-                Ed_virtual_matrix(n_edges) = struct('from',k,'to',k2,'coef_x',A\x','coef_y',A\y','cost',E(k,k2));
+                Ed_virtual_matrix(n_edges) = struct('from',k,'to',k2,'coef_x',A\x,'coef_y',A\y,'cost',E(k,k2));
                 
-%                 figure(1)
-%                 hold on
-%                 plot(x(1:90),y(1:90),'g','LineWidth',1);
-%                 pause();
-%                 figure(2)
                 
             end
         end
@@ -195,60 +184,6 @@ for k = 1:1:number_virtual_nodes
                 %Compute polynomial
 %                 x from 0.5 of k to 1 of k
 %                 x from 0 of k2 to 0.5 of k2
-
-
-                %Compute polynomial
-                %x from 0.5 of k to 0or1 of k
-                %x from 0or1 of k2 to 0.5 of k2
-                cx = Pol_coefs(k).coef_x;
-                cy = Pol_coefs(k).coef_y;
-                x = [];
-                y = [];
-                if(graph.Pol_coefs(k).from == j)
-                    p1 = 0.5:-0.01:0;
-                elseif(graph.Pol_coefs(k).to == j)
-                    p1 = 0.5:0.01:1;
-                end
-                for p = p1
-                    x(end+1) = cx(1)*p^5+cx(2)*p^4+cx(3)*p^3+cx(4)*p^2+cx(5)*p^1+cx(6)*p^0;
-                    y(end+1) = cy(1)*p^5+cy(2)*p^4+cy(3)*p^3+cy(4)*p^2+cy(5)*p^1+cy(6)*p^0;
-                end
-                
-%                 figure(1)
-%                 hold on
-%                 plot(x,y,'y','LineWidth',4);
-%                 pause();
-%                 figure(2)
-                
-                cx = Pol_coefs(k2).coef_x;
-                cy = Pol_coefs(k2).coef_y;
-                if(graph.Pol_coefs(k2).from == j)
-                    p1 = 0:0.01:0.5;
-                elseif(graph.Pol_coefs(k2).to == j)
-                    p1 = 1:-0.01:0.5;
-                end
-                for p = p1
-                    x(end+1) = cx(1)*p^5+cx(2)*p^4+cx(3)*p^3+cx(4)*p^2+cx(5)*p^1+cx(6)*p^0;
-                    y(end+1) = cy(1)*p^5+cy(2)*p^4+cy(3)*p^3+cy(4)*p^2+cy(5)*p^1+cy(6)*p^0;
-                end
-                
-                A = [];
-                for p = linspace(0,1,length(x))
-                    A = [A; p^5 p^4 p^3 p^2 p^1 p^0];
-                end
-                
-                Ed_virtual_matrix(n_edges) = struct('from',k,'to',k2,'coef_x',A\x','coef_y',A\y','cost',E(k,k2));
-                
-%                 figure(1)
-%                 hold on
-%                 plot(x(1:90),y(1:90),'g','LineWidth',1);
-%                 pause();
-%                 figure(2)
-
-
-
-
-
                 
             end
         end
@@ -265,20 +200,10 @@ for i = 1:1:number_virtual_nodes
         if(i>j && E(i,j) ~= 0)
             n1 = virtual_node_list(i,:);
             n2 = virtual_node_list(j,:);
-%             plot([n1(1) n2(1)],[n1(2) n2(2)],'--r','LineWidth',1)
+            plot([n1(1) n2(1)],[n1(2) n2(2)],'--r','LineWidth',1)
             text((n1(1)+n2(1))/2+0.05,(n1(2)+n2(2))/2+0.05,sprintf('%.3f',E(i,j)),'FontSize',10,'Color',[0 0 0])
         end
     end
-end
-for k = 1:1:n_edges
-    cx = Ed_virtual_matrix(k).coef_x;
-    cy = Ed_virtual_matrix(k).coef_y;
-    x = []; y = [];
-    for p = 0:0.01:1
-        x(end+1) = cx(1)*p^5+cx(2)*p^4+cx(3)*p^3+cx(4)*p^2+cx(5)*p^1+cx(6)*p^0;
-        y(end+1) = cy(1)*p^5+cy(2)*p^4+cy(3)*p^3+cy(4)*p^2+cy(5)*p^1+cy(6)*p^0;
-    end
-    plot(x,y,'r-','LineWidth',1)
 end
 for k = 1:1:number_virtual_nodes
     plot(virtual_node_list(k,1),virtual_node_list(k,2),'*b','LineWidth',2)
@@ -300,7 +225,6 @@ G = container_set(vertex.empty());
 
 path = struct('path',[]);
 
-load('./output_structure/Original_graph_36.mat','graph')
 for i = 1:1:number_virtual_nodes
     x = virtual_node_list(i,:);
     neig = [];
@@ -351,10 +275,8 @@ graph3.path_matrix = Paths;
 graph3.w_s = w_s;
 graph3.Pol_coefs = Ed_virtual_matrix;
 
-graph = graph3;
-save('./output_structure/Virtual_graph_36.mat','graph')
-
-
+ 
+save('./output_structure/Graph_data_36_meters_virtuals_only.mat','graph3')
 
 
 

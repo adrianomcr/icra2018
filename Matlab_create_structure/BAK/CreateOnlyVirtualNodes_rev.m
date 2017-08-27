@@ -12,7 +12,7 @@ clear all; clc;
 addpath('./graphutils')
 
 fig = imread('./pixel_files/Map8_2.jpg');
-load('./output_structure/Original_graph_36.mat','graph')
+load('./output_structure/Graph_data_36_meters.mat','graph')
 number_nodes = graph.number_nodes;
 node_list = graph.node_list;
 edge_matrix = graph.edge_matrix;
@@ -278,7 +278,7 @@ for k = 1:1:n_edges
         x(end+1) = cx(1)*p^5+cx(2)*p^4+cx(3)*p^3+cx(4)*p^2+cx(5)*p^1+cx(6)*p^0;
         y(end+1) = cy(1)*p^5+cy(2)*p^4+cy(3)*p^3+cy(4)*p^2+cy(5)*p^1+cy(6)*p^0;
     end
-    plot(x,y,'r-','LineWidth',1)
+    plot(x,y,'r--','LineWidth',1)
 end
 for k = 1:1:number_virtual_nodes
     plot(virtual_node_list(k,1),virtual_node_list(k,2),'*b','LineWidth',2)
@@ -300,7 +300,6 @@ G = container_set(vertex.empty());
 
 path = struct('path',[]);
 
-load('./output_structure/Original_graph_36.mat','graph')
 for i = 1:1:number_virtual_nodes
     x = virtual_node_list(i,:);
     neig = [];
@@ -351,8 +350,8 @@ graph3.path_matrix = Paths;
 graph3.w_s = w_s;
 graph3.Pol_coefs = Ed_virtual_matrix;
 
-graph = graph3;
-save('./output_structure/Virtual_graph_36.mat','graph')
+ 
+save('./output_structure/Graph_data_36_meters_virtuals_only.mat','graph3')
 
 
 

@@ -7,7 +7,7 @@
 
 
 
-load('./output_structure/Original_graph_36.mat','graph')
+load('Graph_data_36_meters.mat','graph')
 
 
 M = [];
@@ -23,4 +23,3 @@ for k = 1:1:(length(M(:,1))-1)
     fprintf('(%d, %d, %.4f),',M(k,1),M(k,2),M(k,3))
 end
 fprintf('(%d, %d, %.4f)]\n',M(end,1),M(end,2),M(end,3))
-

@@ -119,9 +119,9 @@ for k = 1:1:length(Path_l)
     cx = A\x;
     cy = A\y;
     
-%     %Create a "structure for a polynomial" and store it in the matrix
-%     pol = struct('from',Path_l(k).from,'to',Path_l(k).To,'coef_x',cx,'coef_y',cy,'cost',[]);
-%     Pol_coefs(k) = pol;
+    %Create a "structure for a polynomial" and store it in the matrix
+    pol = struct('from',Path_l(k).from,'to',Path_l(k).To,'coef_x',cx,'coef_y',cy);
+    Pol_coefs(k) = pol;
 
     %Simulate the computed polynomial
     xsim = [];
@@ -137,11 +137,6 @@ for k = 1:1:length(Path_l)
         comp = comp + d_comp;
     end
     E_pol(Path_l(k).from,Path_l(k).To) = comp;
-    
-    %Create a "structure for a polynomial" and store it in the matrix
-    pol = struct('from',Path_l(k).from,'to',Path_l(k).To,'coef_x',cx,'coef_y',cy,'cost',comp);
-    Pol_coefs(k) = pol;
-
     
     %Plot the polynomial
 %     figure(1)
@@ -227,7 +222,7 @@ graph.Pol_coefs = Pol_coefs;
 axis(w_s)
 
 % Save structure
-save('./output_structure/Original_graph_36.mat','graph')
+save('./output_structure/Graph_data_36_meters.mat','graph')
 
 
 
