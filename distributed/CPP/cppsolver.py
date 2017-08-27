@@ -18,14 +18,22 @@ def setup_args():
 
 
 #def main_adriano(graph_name, list_active):
-def main_adriano(edges_all, list_active):
+#def CPP(edges_all, list_active, start_node):
+def CPP(edges, start_node):
     """ Make it so. """
+
+
+    """
+    print edges_all
+    print list_active
+    print start_node
 
     #Exclude some edges
     edges = []
     for k in range(len(edges_all)):
         if ((k + 1) in list_active):
             edges.append(edges_all[k])
+    """
 
 
 
@@ -44,6 +52,28 @@ def main_adriano(edges_all, list_active):
 
     #print('Attempting to solve Eularian Circuit...')
     route, attempts = eularian.eularian_path(graph, start=1)
+
+    print '\nOriginal Route:'
+    print route
+    print '\n'
+
+    #Stretch to rewrite the route in such a way the first node is the start node
+    route.pop()
+    ok = False
+    count = 0
+    while(not ok and count < len(route)):
+        count = count + 1
+        if (route[0] != start_node):
+            move_node = route.pop(0)
+            route.append(move_node)
+        else:
+            ok = True
+    route.append(start_node)
+
+
+
+
+
     if not route:
         print('\tGave up after {} attempts.'.format(attempts))
     else:

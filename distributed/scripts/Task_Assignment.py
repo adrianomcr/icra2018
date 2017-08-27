@@ -154,7 +154,7 @@ def write_results_to_file(*args, **kwargs):
 
 #def execute_lp():
 
-n = 30 #number of nodes
+n = 24 #number of nodes
 m = n * (n - 1) #number of edges
 R = 3 #number of robots
 depots = {0: [0],
@@ -221,6 +221,7 @@ p37 = [-0.08, -0.26]
 p38 = [-0.32, -0.77]
 p39 = [0.05, 0.04]
 p40 = [1.91, 1.18]
+p41 = [0, 0]
 pts = []
 for k in range(n):
     pts.append(eval('p%d' % (k + 1)))
