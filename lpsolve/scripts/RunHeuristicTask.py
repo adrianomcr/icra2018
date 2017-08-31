@@ -292,11 +292,11 @@ for k in range(n):
 list_tree.append(matriz)
 
 
-print '\nlen(list_tree) = ', len(list_tree)
-print '\nlist_tree[0] = ', list_tree[0]
-print '\nlist_tree[1] = ', list_tree[1]
-print '\nlist_tree[2] = ', list_tree[2]
-print '\nlist_tree[3] = ', list_tree[3]
+#print '\nlen(list_tree) = ', len(list_tree)
+#print '\nlist_tree[0] = ', list_tree[0]
+#print '\nlist_tree[1] = ', list_tree[1]
+#print '\nlist_tree[2] = ', list_tree[2]
+#print '\nlist_tree[3] = ', list_tree[3]
 #print '\nlist_tree[4] = ', list_tree[4]
 
 
@@ -305,10 +305,14 @@ for k in range(len(pts_0)):
     cluster_of_k = find_cluster(list_tree, k, 0)
     final_cluster.append([k,cluster_of_k])
 
+#"""
 for k in range(len(pts_0)):
-    cor = colors[final_cluster[k][1]]
-    pylab.plot(pts_0[k][0], pts_0[k][1], 'o', markersize=10.0, color=cor)
-
+    pylab.plot(pts_0[k][0], pts_0[k][1], 'ok', markersize=3.0)
+if(len(list_tree[iterations]) <= 8):
+    for k in range(len(pts_0)):
+        cor = colors[final_cluster[k][1]]
+        pylab.plot(pts_0[k][0], pts_0[k][1], 'o', markersize=10.0, color=cor)
+#"""
 
 
 #x = find_cluster(list_tree,15,0)

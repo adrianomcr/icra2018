@@ -165,23 +165,23 @@ def add_new_edges(graph, min_route):
 
 def make_eularian(graph):
     """ Add necessary paths to the graph such that it becomes Eularian. """
-    print('\tDoubling dead_ends')
+    #print('\tDoubling dead_ends')
     graph.add_edges([x.contents for x in find_dead_ends(graph)])  # Double our dead-ends
 
-    print('\tBuilding possible odd node pairs')
+    #print('\tBuilding possible odd node pairs')
     node_pairs = list(build_node_pairs(graph))
-    print('\t\t({} pairs)'.format(len(node_pairs)))
+    #print('\t\t({} pairs)'.format(len(node_pairs)))
 
-    print('\tFinding pair solutions')
+    #print('\tFinding pair solutions')
     pair_solutions = find_node_pair_solutions(node_pairs, graph)
-    print('\t\t({} solutions)'.format(len(pair_solutions)))
+    #print('\t\t({} solutions)'.format(len(pair_solutions)))
 
-    print('\tBuilding path sets')
+    #print('\tBuilding path sets')
     pair_sets = (x for x in unique_pairs(graph.odd_nodes))
 
-    print('\tFinding cheapest route')
+    #print('\tFinding cheapest route')
     cheapest_set, min_route = find_minimum_path_set(pair_sets, pair_solutions)
-    print('\tAdding new edges')
+    #print('\tAdding new edges')
     return add_new_edges(graph, min_route)  # Add our new edges
 
 if __name__ == '__main__':

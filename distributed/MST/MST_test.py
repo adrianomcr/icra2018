@@ -15,7 +15,7 @@ def read_graph():
     rp = rospkg.RosPack()
     dir_path=os.getcwd()
     path = dir_path + '/..'
-    path=path+'/graph/Graph_data_36_meters.mat'
+    path=path+'/graph/Original_graph_36.mat'
     mat = scipy.io.loadmat(path)
     g = mat['graph']
     # Number of nodes

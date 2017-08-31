@@ -20,7 +20,7 @@ define topurg ranger
 define erratic position
 (
   #size [0.024 0.024 0.012]
-  size [0.12 0.12 0.06]
+  size [0.120 0.120 0.060]
   origin [-0.050 0.000 0.000 0.000]
   gui_nose 1
   drive "diff"
@@ -61,10 +61,10 @@ interval_sim 100  # simulation timestep in milliseconds
 
 window
 ( 
-  size [ 771 799 ]
+  size [ 706 686 ]
 
   rotate [ 0.000 0.000 ]
-  scale 61.159
+  scale 55.599
 
   # GUI options
   show_data 1
@@ -98,6 +98,6 @@ floorplan
 # throw in a robot
 #erratic( pose [ 1.200 1.200 0.000 89.610 ] name "robot_0" color "blue")
 #erratic( pose [ 6.0000    7.3800 0.000 89.610 ] name "robot_0" color "blue") #node 9
-erratic( pose [ 0.48   10.42 0.000 35.610 ] name "robot_0" color "blue") #node 1
-erratic( pose [ 11.4000    0.4600 0.000 35.610 ] name "robot_1" color "red") #node 1
+erratic( pose [ 0.4800   10.4200 0.000 1.496 ] name "robot_0" color "blue") #node 1
+erratic( pose [ 11.4000    0.4600 0.000 115.050 ] name "robot_1" color "red") #node 1
 #block( pose [ -13.000 18.000 0.000 180.000 ] name "my_goal" color "red")

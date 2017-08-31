@@ -1,0 +1,46 @@
+Nodes: 10
+Robots: 3
+Variables: 271   (260 integers and 11 reals)
+Constraints: 43   (40 equalities and 3 inequalities)
+
+----- Optimal solution found -----
+Objective = 4.21601707777
+
+Choosen edges for robot 1:
+[[1 5]
+ [5 1]]
+
+Choosen edges for robot 2:
+[[2 3 4 9]
+ [3 2 9 4]]
+
+Choosen edges for robot 3:
+[[ 6  7  8 10]
+ [ 7  6 10  8]]
+
+Time task for robot 1: 4.21601707776
+Time task for robot 2: 3.92600003047
+Time task for robot 3: 4.17323427091
+
+X variables != 0:
+[  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  1.0  ]
+
+Elapsed computation time: 74.8529434204 ms
+
+
+
+
+
+
+
+Used points:
+p1 = [ 0.88 -0.06]
+p2 = [-2.39 -0.81]
+p3 = [-1.78 -0.46]
+p4 = [ 0.61  1.15]
+p5 = [ 2.62 -1.25]
+p6 = [-0.08  1.08]
+p7 = [ 0.65  1.84]
+p8 = [-2.45 -0.37]
+p9 = [-0.79  0.75]
+p10 = [-2.47  1.08]

@@ -53,9 +53,9 @@ def CPP(edges, start_node):
     #print('Attempting to solve Eularian Circuit...')
     route, attempts = eularian.eularian_path(graph, start=1)
 
-    print '\nOriginal Route:'
-    print route
-    print '\n'
+    #print '\nOriginal Route:'
+    #print route
+    #print '\n'
 
     #Stretch to rewrite the route in such a way the first node is the start node
     route.pop()

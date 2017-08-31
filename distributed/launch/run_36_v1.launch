@@ -16,7 +16,10 @@
 </node>
 
 
-<node pkg = "distributed" name = "launcher" type = "launch_robots.py">
+<!--node pkg = "distributed" name = "launcher" type = "launch_robots.py">
+</node-->
+
+<node pkg = "distributed" name = "sensor_simulator" type = "sensor_simulator.py" output="screen">
 </node>
 
 

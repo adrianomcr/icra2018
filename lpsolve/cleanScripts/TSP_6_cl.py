@@ -152,7 +152,7 @@ def write_results_to_file(*args, **kwargs):
 
 #def execute_lp():
 
-n = 20 #number of nodes
+n = 12 #number of nodes
 m = n * (n - 1) #number of edges
 R = 2 #number of robots
 depots = {0: [0],
@@ -597,7 +597,7 @@ int_var = range(1, R*m + 1, 1)
 # ----------  ----------  ----------
 
 # Auto scale flag
-scalemode = 0
+scalemode = 1
 # ----------  ----------  ----------
 
 # Definition of cost function operand (min or max)

@@ -1,0 +1,30 @@
+Nodes: 4
+Robots: 1
+Variables: 13   (8 integers and 5 reals)
+Constraints: 9   (8 equalities and 1 inequalities)
+
+----- Optimal solution found -----
+Objective = 7.36300710046
+
+Choosen edges for robot 1:
+[[1 2 3 4]
+ [3 4 1 2]]
+
+Time task for robot 1: 7.36300710046
+
+X variables != 0:
+[  1.0  1.0  1.0  1.0  ]
+
+Elapsed computation time: 0.176906585693 ms
+
+
+
+
+
+
+
+Used points:
+p1 = [1.3941666666666666, 0.54833333333333334]
+p2 = [-2.0437500000000002, -0.67625000000000002]
+p3 = [1.4849999999999999, -1.4399999999999999]
+p4 = [-0.54888888888888887, 0.1144444444444444]
