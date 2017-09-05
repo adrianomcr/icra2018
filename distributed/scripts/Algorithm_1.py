@@ -5,7 +5,8 @@ from geometry_msgs.msg import Twist, Point
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 from visualization_msgs.msg import Marker, MarkerArray
-from distributed.msg import History, Intlist, HistList
+from distributed.msg import History, HistList, Broadcast, Intlist
+from std_msgs.msg import Int16
 from math import sqrt, atan2, exp, atan, cos, sin, acos, pi, asin, atan2
 from tf.transformations import euler_from_quaternion, quaternion_from_euler
 import numpy as np
@@ -13,6 +14,7 @@ from random import randrange
 from time import sleep
 import tf
 import scipy.io
+import pylab
 import rospkg
 import sys
 
@@ -35,22 +37,16 @@ pose = [0.1, 0.2, 0.001] # [x, y, theta]
 
 global d  # for feedback linearization
 d = 0.07
-
 global Vd
-Vd = 0.25
-
+Vd = 0.25*2
 global time
 time = 0
-
 global Kp  # Proportional gain
 Kp = 0.8
-
 global laserVec
 laserVec = [1 for i in range(270)]
-
 global detected_pose
 detected_pose = 0
-
 #flag to indicate that the routes should be replanned
 global replan_tasks
 replan_tasks = False
@@ -104,15 +100,26 @@ def callback_comm_graph(data):
     #global id
     global list_of_H, list_of_robs, list_of_vels
 
-    global replan_tasks
+    global replan_tasks, finish_edge, id
 
     # This function recieve a message from the centralized sensor simulator
 
     if data.comGraphEvent == True:
         replan_tasks = True
+        finish_edge = False
         list_of_H = data.listOfH
         list_of_robs = data.robList
         list_of_vels = data.velocityList
+
+        """
+        print 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa'
+        print 'Here is H_'+str(id)+' (received from sensor_simulator):'
+        print list_of_H[id]
+        print 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa'
+        """
+
+        print '\nCommunication graph Event Received\n'
+        print 'Finishing Edge ...'
 
         """
         print "\nHere is robList:"
@@ -128,7 +135,53 @@ def callback_comm_graph(data):
     return
 # ----------  ----------  ----------  ----------  ----------
 
+def callback_new_plan(data):
 
+
+    global Hole_path
+    global id, H
+    global replan_tasks
+    global waitting_new_plan
+    global new_task
+    global pose, original_graph
+
+    if id in data.destinations:
+
+        Hole_path = list(data.new_Hole_paths[id].data)
+        # ISSO EH UM MIGUE  ----------  ----------  ----------
+        [current_node, dist] = myLib.get_current_node(original_graph, [pose[0], pose[1]])
+        current_node = current_node + 1
+        if current_node != Hole_path[0]:
+            aux = Hole_path
+            Hole_path = [current_node]
+            Hole_path = Hole_path + aux
+        # ----------  ----------  ----------  ----------
+        print 'Here is Hole_path:'
+        print Hole_path
+        Hmsg = data.listOfH[id]
+        print 'Here is Hmsg:'
+        print Hmsg
+        H['e_v'] = list(Hmsg.e_v)
+        H['e_uv'] = list(Hmsg.e_uv)
+        H['e_g'] = list(Hmsg.e_g)
+        H['T_a'] = list(Hmsg.T_a)
+        H['T_f'] = list(Hmsg.T_f)
+        print 'Here is new H:'
+        print H
+        #H['currEdge'] = data.currEdge
+        #H['pose'] = data.pose
+
+
+
+
+        replan_tasks = False
+        waitting_new_plan = False
+        new_task = 1
+
+
+
+    return
+# ----------  ----------  ----------  ----------  ----------
 
 
 
@@ -157,9 +210,13 @@ def Algorithm_1():
     global Vd
     global laserVec
     global id
-    global replan_tasks
+    global replan_tasks, finish_edge
     global H
     global list_of_H, list_of_robs, list_of_vels
+    global Hole_path
+    global waitting_new_plan
+    global new_task
+    global original_graph
 
     Hmsg = History()
     vel = Twist()
@@ -179,6 +236,10 @@ def Algorithm_1():
     rospy.Subscriber(my_str, LaserScan, callback_laser)
     rospy.Subscriber("/comm_graph", HistList, callback_comm_graph)
 
+    #Read/Write in the topic of new plan
+    pub_broadcast = rospy.Publisher('/new_path_topic', Broadcast, queue_size=1)
+    rospy.Subscriber('/new_path_topic',Broadcast,callback_new_plan)
+
     freq = 10.0  # Hz
     rate = rospy.Rate(freq)
 
@@ -191,12 +252,14 @@ def Algorithm_1():
     edges_listOfTuples = myLib.write_listOfTuples(original_graph, active_edges)
     Hole_path = cppsolver.CPP(edges_listOfTuples, current_node)
 
-    #"""
+    """
     if(id == 0):
-        Hole_path = [1, 2, 14, 13, 12, 10, 11, 9, 8, 7, 24,25,26,27,3]
+        Hole_path = [1, 2, 14, 13, 12, 10, 11, 9, 8, 7, 24, 25, 26, 27, 3]
+        Hole_path = [1, 2, 3, 4, 5, 6, 1, 2, 14, 13, 12, 10, 11, 9, 8, 7, 24, 25, 26, 27, 3]
     elif(id == 1):
-        Hole_path = [30,28,24,23,22,21,32,17,3]
-    #"""
+        Hole_path = [30, 28, 24, 23, 22, 21, 32, 17, 3]
+        Hole_path = [30, 28, 24, 25, 26, 27, 30, 28, 24, 23, 22, 21, 32, 17, 3]
+    """
 
     # ----------  ----------  ----------  ----------
 
@@ -205,6 +268,7 @@ def Algorithm_1():
     T = -2 #"initial flag value"
     pathNode, cx, cy, p, signal, new_task, new_path = [],[],[],[],[],[],[]
     edge = -1
+    waitting_new_plan = False
 
     """
     LH = HistList()
@@ -228,52 +292,125 @@ def Algorithm_1():
 
     while not rospy.is_shutdown():
 
+
+        #print 'a'
+
+
+
+        #print 'replan_tasks = ', replan_tasks
+
+
         count = count + 1
 
         time = count / float(freq)
 
-        #Keep moving through the edge
-        if not replan_tasks:
-            [H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, VX, WZ, end_flag, edge] = myLib.keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, original_graph, freq, pose, laserVec, d, Vd, Kp, id, edge)
-        else:
-            #CALL THE REPLANNING TASK HERE
-            if (id == min(list_of_robs)):
-                #Compute the replanning
+        if not waitting_new_plan:
+            if not replan_tasks:
+                # Keep moving through the current edge
+                [H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, VX, WZ, end_flag, edge, change_edge] = myLib.keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, original_graph, freq, pose, laserVec, d, Vd, Kp, id, edge)
+            else:
+                # Keep moving just to complete the edge
+                if(not finish_edge):
+                    [H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, VX, WZ, end_flag, edge, change_edge] = myLib.keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, original_graph, freq, pose, laserVec, d, Vd, Kp, id, edge)
+                    if change_edge:
+                        finish_edge = True
+                        print '\nEdge finished\n'
+                        vel.linear.x, vel.angular.z = 0, 0
+                        pub_stage.publish(vel)
+                else:
+                    # CALL THE REPLANNING TASK HERE
+                    if (id == min(list_of_robs)):
+                        #Compute the replanning
+                        vel.linear.x, vel.angular.z = 0, 0
+                        pub_stage.publish(vel)
+                        print 'list_of_H:'
+                        print list_of_H
+                        print 'list_of_robs:'
+                        print list_of_robs
+                        print 'list_of_vels:'
+                        print list_of_vels
+                        change_plan, Hole_path_list, new_Hists = Alg2.replanning(original_graph,virtual_graph,list_of_H, list_of_robs, list_of_vels)
+                        pylab.close("all")
+
+                        #"""
+                        #Broadcast to other robots
+                        print '\nCreating Broadcast message\n'
+                        B = Broadcast()
+                        B.sender = id
+                        B.destinations = [0,1]
+                        IL = Intlist()
+                        print 'Here is Hole_path_list[0]'
+                        print Hole_path_list[0]
+                        IL.data = list(Hole_path_list[0])
+                        print 'Here is IL'
+                        print IL
+                        print 'Here is type(IL)'
+                        print type(IL)
+                        B.new_Hole_paths.append(IL)
+                        IL = Intlist()
+                        print 'Here is Hole_path_list[0]'
+                        print Hole_path_list[0]
+                        IL.data = list(Hole_path_list[1])
+                        print 'Here is IL'
+                        print IL
+                        B.new_Hole_paths.append(IL)
+                        #B.new_Hole_paths = Hole_path_list
+                        B.listOfH = new_Hists
+
+                        print '\nHere is B:'
+                        print B
+                        print '\n'
+                        #"""
+
+                        waitting_new_plan = True
+                        pub_broadcast.publish(B)
+
+                        #sleep(0.5)
+
+                        #end_flag = True
+
+                    else:
+                        #Wait for the new result - HOW????
+
+
+                        #list_of_H = []
+                        VX, WZ = 0, 0
+                        vel.linear.x, vel.angular.z = 0, 0
+                        pub_stage.publish(vel)
+                        #end_flag = True
+                        waitting_new_plan = True
+
+
+            if end_flag or len(H['e_uv'])==0:
                 vel.linear.x, vel.angular.z = 0, 0
                 pub_stage.publish(vel)
-                Alg2.replanning(original_graph,virtual_graph,list_of_H, list_of_robs, list_of_vels)
-                print 'Returnned from Alg2.replanning()'
-                end_flag = True
-            else:
-                #Wait for the new result - HOW????
-                list_of_H = []
-                VX, WZ = 0, 0
-                end_flag = True
+                break
 
 
-        if end_flag:
+
+
+            #Publish speed
+            vel.linear.x, vel.angular.z = VX, WZ
             pub_stage.publish(vel)
-            break
 
 
+            #Write to file
+            if not file_vel.closed:
+                mystr = str(VX) + "\t" + str(WZ) + "\t" + "\t" + str(time) + "\n"
+                file_vel.write(mystr)
 
+            #Publish the history
+            Hmsg = History()
+            Hmsg.e_v, Hmsg.e_uv, Hmsg.e_g, Hmsg.T_a, Hmsg.T_f, Hmsg.currEdge, Hmsg.pose = H['e_v'], H['e_uv'], H['e_g'], H['T_a'], H['T_f'], edge, pose
+            pub_hist.publish(Hmsg)
 
-        #Publish speed
-        vel.linear.x, vel.angular.z = VX, WZ
-        pub_stage.publish(vel)
+            #Wait
+            rate.sleep()
 
+        else:
+            #Wait
+            rate.sleep()
 
-        #Write to file
-        if not file_vel.closed:
-            mystr = str(VX) + "\t" + str(WZ) + "\t" + "\t" + str(time) + "\n"
-            file_vel.write(mystr)
-
-        #Publish the history
-        Hmsg.e_v, Hmsg.e_uv, Hmsg.e_g, Hmsg.T_a, Hmsg.T_f, Hmsg.currEdge = H['e_v'], H['e_uv'], H['e_g'], H['T_a'], H['T_f'], edge+1
-        pub_hist.publish(Hmsg)
-
-        #Wait
-        rate.sleep()
 
 
     else: # else while
@@ -281,6 +418,7 @@ def Algorithm_1():
         vel.linear.x = 0
         vel.angular.z = 0
         pub_stage.publish(vel)
+        #break
 
 
 # ---------- !! ---------- !! ---------- !! ---------- !! ----------
@@ -341,7 +479,6 @@ if __name__ == '__main__':
         Algorithm_1()
     except rospy.ROSInterruptException:
         pass
-
 
 
     file_path.close()

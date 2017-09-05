@@ -55,9 +55,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 add_message_files(
   FILES
-  History.msg
   Intlist.msg
+  History.msg
   HistList.msg
+  Broadcast.msg
 )
 
 ## Generate services in the 'srv' folder

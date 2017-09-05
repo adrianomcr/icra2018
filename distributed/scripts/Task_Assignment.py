@@ -36,6 +36,8 @@ scalemode: Autoscale flag. Off when 0 or omitted.
  setminim: Set maximum lp when this flag equals 0 or omitted.
 
 OUTPUT: lp_handle is an integer handle to the lp created.
+
+Website: http://lpsolve.sourceforge.net/5.5/Python.htm
 """
 
 #"""
@@ -142,7 +144,7 @@ def write_results_to_file(*args, **kwargs):
     rp = rospkg.RosPack()
     fig_name = rp.get_path('distributed')
     fig_name = fig_name + '/resultsLP/Results_' + date + '_' + hour + '.png'
-    pylab.savefig(fig_name)
+    #ZZZpylab.savefig(fig_name)
 
 #"""
 
@@ -225,20 +227,28 @@ def execute_lp(speeds, depots, colors, C, pts):
     """
     #  ----------  ----------  ----------
 
-    #Definition of the cost matrix WITH THE HEURISTIC COST
-    """
+    #Addition of the heuristic cost based on EUCLIDIAN DISTANCE
+    #"""
     for r in range(R):
-        C = [[0 for i in range(n)] for j in range(n)]
+        exec ('C_%d = np.matrix(C_%d)' % (r, r))
         for i in range(n):
             for j in range(n):
-                C[i][j] = sqrt((pts[i][0] - pts[j][0]) ** 2 + (pts[i][1] - pts[j][1]) ** 2)
-                medium = [(pts[i][0] + pts[j][0])/2, (pts[i][1] + pts[j][1])/2]
-                C[i][j] = C[i][j] + sqrt((medium[0] - pts[depots[r]][0]) ** 2 + (medium[1] - pts[depots[r]][1]) ** 2)
-        C = np.matrix(C)
-        exec ('C_%d = C/float(speeds[r])' % (r))
+                #C[i][j] = sqrt((pts[i][0] - pts[j][0]) ** 2 + (pts[i][1] - pts[j][1]) ** 2)
+                #medium = [(pts[i][0] + pts[j][0])/2, (pts[i][1] + pts[j][1])/2]
+                #C[i][j] = C[i][j] + sqrt((medium[0] - pts[depots[r]][0]) ** 2 + (medium[1] - pts[depots[r]][1]) ** 2)
+                heuristica = [(pts[i][0] + pts[j][0])/2, (pts[i][1] + pts[j][1])/2]
+                heuristica = sqrt((heuristica[0] - pts[depots[r]][0]) ** 2 + (heuristica[1] - pts[depots[r]][1]) ** 2)
+                #print C_0
+                #print C_0[i, j]
+                #print heuristica
+                #print 'C_%d[i,j] = C_%d[i,j] + heuristica' % (r, r)
+                gamma = 0.2
+                exec ('C_%d[i,j] = C_%d[i,j] + gamma*heuristica' % (r, r))
+        #C = np.matrix(C)
+        #exec ('C_%d = C/float(speeds[r])' % (r))
         exec ('C_%d = C_%d.tolist()' % (r, r))
-    C = C.tolist()
-    """
+    #C = C.tolist()
+    #"""
     """
     for r in range(R):
         print ''
@@ -478,7 +488,9 @@ def execute_lp(speeds, depots, colors, C, pts):
 
 
     lp = lp_maker(c, A, b, e, vlb, vub, int_var, scalemode, setminim)
-    print '\n\n\n\n\n\n\n\n\n\n\n\n\n'
+    TIMEOUT = 2.0 #seconds
+    lpsolve('set_timeout', lp, TIMEOUT)
+    #print '\n\n\n\n\n\n\n\n\n\n\n\n\n'
     print '\nLP problem created'
     print 'Nodes:', n
     print 'Robots: ', R
@@ -537,18 +549,25 @@ def execute_lp(speeds, depots, colors, C, pts):
 
 
     #Plotting results  ----------  ----------  ----------
+    #ZZZpylab.axis('equal')
+    #ZZZpylab.axis(w_s)
     pylab.axis('equal')
     pylab.axis(w_s)
     for k in range(n):
         #pylab.plot(pts[k][0], pts[k][1], 'bo', linewidth=2.0)
         #pylab.plot(pts[k][0], pts[k][1], 'b*', linewidth=2.0)
+        #ZZZpylab.plot(pts[k][0], pts[k][1], 'ko', markersize=10.0)
         pylab.plot(pts[k][0], pts[k][1], 'ko', markersize=10.0)
-        pylab.text(pts[k][0]+0.04,pts[k][1]+0.04,k+1,fontsize=20.0)
+        #pylab.text(pts[k][0]+0.04,pts[k][1]+0.04,k+1,fontsize=20.0)
+        #ZZZpylab.text(pts[k][0] + 0.04, pts[k][1] + 0.04, k + 0, fontsize=20.0)
+        z = 0
 
     for i in range(n):
         for j in range(n):
             if(i != j):
+                #ZZZpylab.plot([pts[i][0],pts[j][0]], [pts[i][1],pts[j][1]],'k--',linewidth=0.2)
                 pylab.plot([pts[i][0],pts[j][0]], [pts[i][1],pts[j][1]],'k--',linewidth=0.2)
+                z = 0
 
     for r in range(R):
         k = -1
@@ -557,15 +576,19 @@ def execute_lp(speeds, depots, colors, C, pts):
                 if (i != j):
                     k = k + 1
                     if (abs(x[r * m + k] - 1) < 10 ** (-6)):
+                        #ZZZpylab.plot([pts[i][0],pts[j][0]], [pts[i][1],pts[j][1]],colors[r],linewidth=3.0)
                         pylab.plot([pts[i][0],pts[j][0]], [pts[i][1],pts[j][1]],colors[r],linewidth=3.0)
-
+                        z = 0
 
 
 
 
     #write_results_to_file(**locals())
 
+    #ZZZpylab.show()
     pylab.show()
+
+    return x
     #  ----------  ----------  ----------  ----------
 
 

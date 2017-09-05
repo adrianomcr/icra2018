@@ -26,7 +26,6 @@ def fleury_walk(graph, start=None, circuit=False):
 
     """
     visited = set()  # Edges
-
     # Begin at a random node unless start is specified
     node = start if start else random.choice(graph.node_keys)
 
@@ -62,8 +61,10 @@ def eularian_path(graph, start=None, circuit=False):
     If `start` is set, force start at that Node.
 
     """
-    for i in range(1, 1001):
+    # for i in range(1, 1001):
+    for i in range(1, 101):
         route = fleury_walk(graph, start, circuit)
+        #print 'len(route)/len(graph)', len(route), '/', len(graph)
         if len(route) == len(graph) + 1:  # We visited every edge
             return route, i
     return [], i  # Never found a solution
@@ -182,6 +183,12 @@ def make_eularian(graph):
     #print('\tFinding cheapest route')
     cheapest_set, min_route = find_minimum_path_set(pair_sets, pair_solutions)
     #print('\tAdding new edges')
+
+    """
+    print '\nHere is graph from make_eulerian:'
+    print graph
+    #print min_route
+    """
     return add_new_edges(graph, min_route)  # Add our new edges
 
 if __name__ == '__main__':

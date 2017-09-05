@@ -98,7 +98,9 @@ for k = 1:1:number_virtual_nodes
 %     plot(virtual_node_list(k,1),virtual_node_list(k,2),'*b','LineWidth',2)
 %     plot(virtual_node_list(k,1),virtual_node_list(k,2),'ob','LineWidth',2)
 %     text(virtual_node_list(k,1)+0.05,virtual_node_list(k,2)+0.05,sprintf('%d',k),'FontSize',10,'Color',[0 0 1])
-    text(virtual_node_list(k,1)+0.05,virtual_node_list(k,2)+0.05,sprintf('%.3f',edge_matrix(i,j)),'FontSize',10,'Color',[0 0 0])
+
+    %Plot the cost of the edges
+%     text(virtual_node_list(k,1)+0.05,virtual_node_list(k,2)+0.05,sprintf('%.3f',edge_matrix(i,j)),'FontSize',10,'Color',[0 0 0])
     
     
 end
@@ -266,7 +268,9 @@ for i = 1:1:number_virtual_nodes
             n1 = virtual_node_list(i,:);
             n2 = virtual_node_list(j,:);
 %             plot([n1(1) n2(1)],[n1(2) n2(2)],'--r','LineWidth',1)
-            text((n1(1)+n2(1))/2+0.05,(n1(2)+n2(2))/2+0.05,sprintf('%.3f',E(i,j)),'FontSize',10,'Color',[0 0 0])
+
+            %Plot the cost of the edges
+%             text((n1(1)+n2(1))/2+0.05,(n1(2)+n2(2))/2+0.05,sprintf('%.3f',E(i,j)),'FontSize',10,'Color',[0 0 0])
         end
     end
 end

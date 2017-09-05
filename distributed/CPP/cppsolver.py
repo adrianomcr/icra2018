@@ -20,8 +20,13 @@ def setup_args():
 #def main_adriano(graph_name, list_active):
 #def CPP(edges_all, list_active, start_node):
 def CPP(edges, start_node):
+
     """ Make it so. """
 
+    # start_node -> node in which the robot start
+    # edges -> list of tuples in the form (from, to, cost)
+
+    #print edges
 
     """
     print edges_all
@@ -46,32 +51,44 @@ def CPP(edges, start_node):
         #print('Conversion complete')
         #print('\tAdded {} edges'.format(len(graph) - len(original_graph)))
         #print('\tTotal cost is {}'.format(graph.total_cost))
+
+        #print 'grafo inicial NAO euleriano'
     else:
         graph = original_graph
 
+    """
+    if graph.is_eularian:
+        print 'grafo transformado euleriano'
+    else:
+        print 'grafo transformado NAO euleriano'
+    """
+
+    """
+    print 'graph'
+    print graph
+    """
 
     #print('Attempting to solve Eularian Circuit...')
-    route, attempts = eularian.eularian_path(graph, start=1)
+    #route, attempts = eularian.eularian_path(graph, start=1)
+    #route, attempts = eularian.eularian_path(graph, start=None)
 
-    #print '\nOriginal Route:'
-    #print route
-    #print '\n'
+    """
+    list_plot = []
+    for k in range(len(edges)):
+        tupla = edges[k]
+        list_plot.append(tupla[0])
+        list_plot.append(tupla[1])
+    list_plot = list(set(list_plot))
+    print 'list_plot', list_plot
+    print 'start_node', start_node
+    """
+    route, attempts = eularian.eularian_path(graph, start=start_node)
 
-    #Stretch to rewrite the route in such a way the first node is the start node
-    route.pop()
-    ok = False
-    count = 0
-    while(not ok and count < len(route)):
-        count = count + 1
-        if (route[0] != start_node):
-            move_node = route.pop(0)
-            route.append(move_node)
-        else:
-            ok = True
-    route.append(start_node)
-
-
-
+    """
+    print '\nOriginal Route:'
+    print route
+    print '\n'
+    """
 
 
     if not route:
@@ -80,7 +97,21 @@ def CPP(edges, start_node):
         #print('\tSolved in {} attempts'.format(attempts, route))
         #print('Solution: ({} edges)'.format(len(route) - 1))
         #print('\t{}'.format(route))
-	    return(route)
+
+        # Stretch to rewrite the route in such a way the first node is the start node
+        route.pop()
+        ok = False
+        count = 0
+        while (not ok and count < len(route)):
+            count = count + 1
+            if (route[0] != start_node):
+                move_node = route.pop(0)
+                route.append(move_node)
+            else:
+                ok = True
+        route.append(start_node)
+
+        return(route)
 
     return(-1)
 

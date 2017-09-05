@@ -49,6 +49,7 @@ def write_listOfTuples(graph,list_active):
     for k in range(len(PolC[0])):
         if (k + 1 in list_active):
             [fr, to, cx, cy, cost] = getCoefs(k, PolC)
+            #print 'k+1, fr, to = ', k + 1,' ',fr,' ', to
             list_tuple.append((fr, to, cost))
 
     #print 'Here is the list of tuples:'
@@ -280,6 +281,51 @@ def compute_velocity(cx, cy, p, dt, signal, pose, Vd, Kp):
 # ----------  ----------  ----------  ----------  ----------
 
 
+
+#Function to apply a repulsive velocity and avoid collisions
+def repulsive_potential(laserVec, pose, ux, uy):
+
+    """
+    print '\n\nHere is laserVec'
+    print laserVec
+    print '\n\n'
+    print '\n\nHere is laserVec[135]'
+    print laserVec[135]
+    print '\n\n'
+    print '\n\nHere is pose[2]'
+    print pose[2]
+    print '\n\n'
+    """
+
+    index = laserVec.index(min(laserVec))
+    do = 0.35
+    if laserVec[index] < do:
+        phi = (-135 + index) * pi / 180.0  # angle of the object in the local frame
+        print 'phi = ', phi
+        theta = pose[2]
+        beta = phi + theta  # angle of the object in the world frame
+        grad_ob = [cos(beta), sin(beta)]
+        gain = 0.1*(1/laserVec[index] - 1/do)*(1/laserVec[index]**1)
+        vx_repulsive = -gain * grad_ob[0]
+        vy_repulsive = -gain * grad_ob[1]
+        ux = ux + vx_repulsive
+        uy = uy + vy_repulsive
+        print '                                       !!!!! Repulsive potential active !!!!!'
+
+    """
+    if laserVec[135] < 0.15:
+        vx_repulsive = -(0.05 / laserVec[135]) * cos(pose[2])
+        vy_repulsive = -(0.05 / laserVec[135]) * sin(pose[2])
+        ux = ux + vx_repulsive
+        uy = uy + vy_repulsive
+        print '                                       !!!!! Repulsive potential active !!!!!'
+    """
+
+    return ux, uy
+# ----------  ----------  ----------  ----------  ----------
+
+
+
 def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, original_graph, freq, pose, laserVec, d, Vd, Kp, id, edge):
 
     C = original_graph['C']
@@ -288,13 +334,15 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
     EdgeMap = original_graph['EdgeMap']
 
     end_flag = False
+    change_edge = False #Indicated a change on edge - useful to force robots to finish a edge before replanning
 
     if time - time_start > T + 1 / freq:
+        change_edge = True
         time_start = time
         if len(pathNode) > 1:
-            new_path = 1
+            new_path = 1 #robot ended a direct path only
         else:
-            new_task = 1
+            new_task = 1 #robot ended a complete path as well
 
     if new_task == 1:
         if len(Hole_path) > 1:
@@ -304,25 +352,6 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
 
             new_task = 0
             new_path = 1
-
-            # Update the History
-            # Remove the edge from the list of unvisited nodes
-            edge = EdgeMap[i-1][j-1]
-            # Ad the edge in the forbidden edges
-            if edge in H['e_uv']:
-                H['e_uv'].pop(H['e_uv'].index(edge))
-            # Add the edge to the list of visited edges
-            if not edge in H['e_v']:
-                H['e_v'].append(edge)
-
-
-            print '\nRobot ' + str(id)
-            print 'Moving from i =', i, 'to', 'j =', j
-            print 'Edge = ', EdgeMap[i-1][j-1]
-            print 'e_v:\n', H['e_v']
-            print 'e_uv:\n', H['e_uv']
-            #print 'time = ', time, '\n'
-
 
         else:
             print'\nNodes search completed\n'
@@ -341,16 +370,40 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
             p = 1
         new_path = 0
 
+        # Update the History
+
+        edge = EdgeMap[i - 1][j - 1]
+        # Remove the edge from the list of unvisited nodes
+        if edge in H['e_uv']:
+            H['e_uv'].pop(H['e_uv'].index(edge))
+        # Add the edge to the list of visited edges
+        if not edge in H['e_v']:
+            H['e_v'].append(edge)
+        # Ad the edge in the forbidden edges
+
+        print '\nRobot ' + str(id)
+        print 'Moving from i =', i, 'to', 'j =', j
+        print 'Edge = ', EdgeMap[i - 1][j - 1]
+        print 'e_v:\n', H['e_v']
+        print 'e_uv:\n', H['e_uv']
+        print 'Whole_path:\n', Hole_path
+
+
+
     [ux, uy, p] = compute_velocity(cx, cy, p, 1 / freq, signal, pose, Vd, Kp)
+
+    [ux, uy] = repulsive_potential(laserVec, pose, ux, uy)
+    """
     if laserVec[135] < 0.15:
         vx_repulsive = -(0.05 / laserVec[135]) * cos(pose[2])
         vy_repulsive = -(0.05 / laserVec[135]) * sin(pose[2])
         ux = ux + vx_repulsive
-        uy = ux + vy_repulsive
+        uy = uy + vy_repulsive
         print '                                       !!!!! Repulsive potential active !!!!!'
+    """
     [VX, WZ] = feedback_linearization(ux, uy, pose, d)
 
-    return H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, VX, WZ, end_flag, edge
+    return H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, VX, WZ, end_flag, edge, change_edge
 # ----------  ----------  ----------  ----------  ----------
 
 

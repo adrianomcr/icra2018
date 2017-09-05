@@ -98,6 +98,9 @@ def callback_hist_0(data):
     H_0['T_a'] = data.T_a
     H_0['T_f'] = data.T_f
     H_0['currEdge'] = data.currEdge
+    H_0['pose'] = data.pose
+
+
 
     #print 'H_0 received'
 
@@ -115,6 +118,7 @@ def callback_hist_1(data):
     H_1['T_a'] = data.T_a
     H_1['T_f'] = data.T_f
     H_1['currEdge'] = data.currEdge
+    H_1['pose'] = data.pose
 
     #print 'H_1 received'
 
@@ -133,7 +137,7 @@ def send_message_recompute_close(pub_comm_graph):
     global H_0, H_1, HL
 
 
-
+    HL = HistList()
 
     HL.comGraphEvent = True
 
@@ -145,6 +149,7 @@ def send_message_recompute_close(pub_comm_graph):
     H.T_a = H_0['T_a']
     H.T_f = H_0['T_f']
     H.currEdge = H_0['currEdge']
+    H.pose = H_0['pose']
     HL.robList.append(0)
     HL.velocityList.append(1)
     HL.listOfH.append(H)
@@ -158,16 +163,19 @@ def send_message_recompute_close(pub_comm_graph):
     H.T_a = H_1['T_a']
     H.T_f = H_1['T_f']
     H.currEdge = H_1['currEdge']
+    H.pose = H_1['pose']
     HL.robList.append(1)
     HL.velocityList.append(1.1)
     HL.listOfH.append(H)
 
     pub_comm_graph.publish(HL)
 
+    """
     print '\nHere is  H_0:'
     print H_0
     print '\nHere is  H_1:'
     print H_1
+    """
 
 
     return
@@ -238,6 +246,13 @@ def sensor_simulator():
 
 
         dist_0_1 = ((pose_0[0]-pose_1[0])**2 + (pose_0[1]-pose_1[1])**2)**0.5
+
+
+        """
+        print 'Here is H_0, (from the sensor simulator)'
+        print H_0
+        """
+
 
         """
         if dist_0_1 <= rho:
