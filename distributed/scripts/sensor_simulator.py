@@ -102,13 +102,7 @@ def callback_hist_0(data):
     H_0['pose'] = data.pose
     H_0['lastMeeting'] = list(data.lastMeeting)
 
-
-
-    #print 'H_0 received'
-
     return
-
-
 # ----------  ----------  ----------  ----------  ----------
 # Callback routine to obtain the history of robot 1
 def callback_hist_1(data):
@@ -124,11 +118,7 @@ def callback_hist_1(data):
     H_1['pose'] = data.pose
     H_1['lastMeeting'] = list(data.lastMeeting)
 
-    #print 'H_1 received'
-
     return
-
-
 # ----------  ----------  ----------  ----------  ----------
 
 
@@ -140,10 +130,7 @@ def send_message_recompute_close(pub_comm_graph):
 
     global H_0, H_1, HL
 
-    #print 'lastMeeting robot 0:', H_0['lastMeeting']
-    #print 'lastMeeting robot 1:', H_1['lastMeeting']
 
-    #print 'H_0_last != H_1_last', H_0['lastMeeting'] != H_1['lastMeeting']
 
 
     if (H_0['lastMeeting'] != H_1['lastMeeting'] or H_0['lastMeeting'] == []):  # Check if there is new information
@@ -185,12 +172,7 @@ def send_message_recompute_close(pub_comm_graph):
 
         pub_comm_graph.publish(HL)
 
-        """
-        print '\nHere is  H_0:'
-        print H_0
-        print '\nHere is  H_1:'
-        print H_1
-        """
+
     else:
         HL.comGraphEvent = True
         print 'Meeting happen but there is no new information'
@@ -235,7 +217,6 @@ def sensor_simulator():
     rospy.Subscriber("/robot_0/history", History, callback_hist_0)
     rospy.Subscriber("/robot_1/history", History, callback_hist_1)
     rospy.init_node("sensor_similator")
-    #pub_comm_graph = rospy.Publisher("/comm_graph", Bool, queue_size=1)
     pub_comm_graph = rospy.Publisher("/comm_graph", HistList, queue_size=1)
 
 
@@ -268,26 +249,6 @@ def sensor_simulator():
         dist_0_1 = ((pose_0[0]-pose_1[0])**2 + (pose_0[1]-pose_1[1])**2)**0.5
 
 
-        """
-        print 'Here is H_0, (from the sensor simulator)'
-        print H_0
-        """
-
-
-        """
-        if dist_0_1 <= rho:
-            #Send message to robots
-            close_var.data = True
-            pub_comm_graph.publish(close_var)
-        """
-        """
-        if close_var.data == False and dist_0_1 < DIST_INTO:
-            #close_var.data = True
-            #pub_comm_graph.publish(close_var)
-            send_message_recompute_close(pub_comm_graph)
-        elif close_var.data == True and dist_0_1 > DIST_LEAVE:
-            close_var.data = False
-        """
         if HL.comGraphEvent == False and dist_0_1 < DIST_INTO:
             send_message_recompute_close(pub_comm_graph)
         elif HL.comGraphEvent == True and dist_0_1 > DIST_LEAVE:

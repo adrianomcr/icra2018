@@ -14,7 +14,7 @@ import scipy.io
 
 
 
-
+"""
 #Function that finds the node that connects two edges
 def find_commom_node(ed1, ed2, PolC):
     [fr1, to1, cx, cy, cost] = getCoefs(ed1, PolC)
@@ -31,8 +31,9 @@ def find_commom_node(ed1, ed2, PolC):
 
     return -1 #Error
 # ----------  ----------  ----------  ----------  ----------
+"""
 
-#"""
+"""
 #Function that finds the node (original graph) that corresponds to an edge (virtual graph)
 def find_node_of_edge(edge, PolC_ori, PolC_virt):
 
@@ -40,7 +41,7 @@ def find_node_of_edge(edge, PolC_ori, PolC_virt):
 
     return -1 #Error
 # ----------  ----------  ----------  ----------  ----------
-#"""
+"""
 
 
 
@@ -56,7 +57,6 @@ def find_node_of_edge(edge, PolC_ori, PolC_virt):
 # Function to define the closest node from a given position
 def get_current_node(graph,pose):
     nodes = graph['nodes']
-
 
     close_node = 0
     current_dist = (pose[0]-nodes[0][0])**2 + (pose[1]-nodes[0][1])**2
@@ -74,16 +74,6 @@ def get_current_node(graph,pose):
 
 # Function to write a list of tuples to describe a sub-graph
 def write_listOfTuples(graph,list_active):
-    """
-    :param graph: a dictionary describing the full original graph
-    :param list_active: list of idexes of the edge that must be visited (from 1 to the number of edges)
-    :return: list_tuple: list of tuples containing the edges from, to and the cost
-    """
-
-    """
-    Adriano, you should take care of what is going to happen when the graph is not connected
-    After the use of MST
-    """
 
     PolC = graph['PolC']
 
@@ -91,11 +81,7 @@ def write_listOfTuples(graph,list_active):
     for k in range(len(PolC[0])):
         if (k + 1 in list_active):
             [fr, to, cx, cy, cost] = getCoefs(k, PolC)
-            #print 'k+1, fr, to = ', k + 1,' ',fr,' ', to
             list_tuple.append((fr, to, cost))
-
-    #print 'Here is the list of tuples:'
-    #print list_tuple
 
     return list_tuple
 # ----------  ----------  ----------  ----------  ----------
@@ -115,7 +101,6 @@ def write_listOfTuples(graph,list_active):
 # Function to read the data of the graph
 def read_graph(name):
 
-    #global n, nodes, C, PathM, w_s, PolC
     rp = rospkg.RosPack()
     path = rp.get_path('distributed')
     path = path + '/graph/' + name
@@ -179,7 +164,6 @@ def read_graph(name):
 # Function to get the path in sequency of nodes
 def getNodePath(i,j,PathM):
 
-    #pathNode = PathM[i-1][j-1]
     pathNode = PathM[i][j]
     pathNode = pathNode[0]
     pathNode = pathNode.tolist()
@@ -243,8 +227,6 @@ def getCoefs(edge,PolC):
 # Function to get the number of a edge given two adjacent nodes
 def getEdge(i,j,PolC):
 
-    #print 'i = ', i
-    #print 'j = ', j
 
     for k in range(len(PolC[0])):
         [fr, to, cx, cy, cost] = getCoefs(k,PolC)
@@ -253,11 +235,8 @@ def getEdge(i,j,PolC):
         elif (fr == j and to == i):
             return k, -1
 
-
     print '\n!! --- Ther is no direct path between i and j --- !!\n'
     return 0
-
-
 # ----------  ----------  ----------  ----------  ----------
 
 
@@ -265,26 +244,9 @@ def getEdge(i,j,PolC):
 
 
 
-
-
-
-
-
-
-
-
-# Functions used in Algorithm_1
-# ----------  ----------  ----------  ----------  ----------  ----------  ----------  ----------
-# ----------  ----------  ----------  ----------  ----------  ----------  ----------  ----------
-
 # Feedback linearization
 def feedback_linearization(Ux, Uy, pose, d):
-    #global x_n, y_n, theta_n
-    #global pose
-    #global d
 
-    x_n = pose[0]
-    y_n = pose[1]
     theta_n = pose[2]
 
     VX = cos(theta_n) * Ux + sin(theta_n) * Uy
@@ -292,6 +254,7 @@ def feedback_linearization(Ux, Uy, pose, d):
 
     return (VX, WZ)
 # ----------  ----------  ----------  ----------  ----------
+
 
 
 def compute_velocity(cx, cy, p, dt, signal, pose, Vd, Kp):
@@ -327,23 +290,10 @@ def compute_velocity(cx, cy, p, dt, signal, pose, Vd, Kp):
 #Function to apply a repulsive velocity and avoid collisions
 def repulsive_potential(laserVec, pose, ux, uy):
 
-    """
-    print '\n\nHere is laserVec'
-    print laserVec
-    print '\n\n'
-    print '\n\nHere is laserVec[135]'
-    print laserVec[135]
-    print '\n\n'
-    print '\n\nHere is pose[2]'
-    print pose[2]
-    print '\n\n'
-    """
-
     index = laserVec.index(min(laserVec))
     do = 0.35
     if laserVec[index] < do:
         phi = (-135 + index) * pi / 180.0  # angle of the object in the local frame
-        #print 'phi = ', phi
         theta = pose[2]
         beta = phi + theta  # angle of the object in the world frame
         grad_ob = [cos(beta), sin(beta)]
@@ -353,15 +303,6 @@ def repulsive_potential(laserVec, pose, ux, uy):
         ux = ux + vx_repulsive
         uy = uy + vy_repulsive
         #print '                                       !!!!! Repulsive potential active !!!!!'
-
-    """
-    if laserVec[135] < 0.15:
-        vx_repulsive = -(0.05 / laserVec[135]) * cos(pose[2])
-        vy_repulsive = -(0.05 / laserVec[135]) * sin(pose[2])
-        ux = ux + vx_repulsive
-        uy = uy + vy_repulsive
-        print '                                       !!!!! Repulsive potential active !!!!!'
-    """
 
     return ux, uy
 # ----------  ----------  ----------  ----------  ----------
@@ -428,8 +369,8 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
         # Ad the edge in the forbidden edges
 
         print '\nRobot ' + str(id)
-        print 'Moving from i =', i, 'to', 'j =', j
-        print 'Edge = ', EdgeMap[i - 1][j - 1]
+        #print 'Moving from i =', i, 'to', 'j =', j
+        #print 'Edge = ', EdgeMap[i - 1][j - 1]
         print 'e_v:\n', H['e_v']
         print 'e_uv:\n', H['e_uv']
         print 'Whole_path:\n', Hole_path
@@ -439,31 +380,8 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
     [ux, uy, p] = compute_velocity(cx, cy, p, 1 / freq, signal, pose, Vd, Kp)
 
     [ux, uy] = repulsive_potential(laserVec, pose, ux, uy)
-    """
-    if laserVec[135] < 0.15:
-        vx_repulsive = -(0.05 / laserVec[135]) * cos(pose[2])
-        vy_repulsive = -(0.05 / laserVec[135]) * sin(pose[2])
-        ux = ux + vx_repulsive
-        uy = uy + vy_repulsive
-        print '                                       !!!!! Repulsive potential active !!!!!'
-    """
+
     [VX, WZ] = feedback_linearization(ux, uy, pose, d)
 
     return H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, VX, WZ, end_flag, edge, change_edge
 # ----------  ----------  ----------  ----------  ----------
-
-
-# ----------  ----------  ----------  ----------  ----------  ----------  ----------  ----------
-# ----------  ----------  ----------  ----------  ----------  ----------  ----------  ----------
-
-
-
-def merge_history():
-    return
-
-
-
-# ----------  ----------  ----------  ----------  ----------
-
-
-

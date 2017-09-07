@@ -167,28 +167,6 @@ def execute_lp(speeds, depots, colors, C, pts):
     n = len(C) #number of nodes
     m = n * (n - 1) #number of edges
     R = len(speeds) #number of robots
-    #depots = {0: [0],
-    #          1: [0, 1],
-    #          2: [4, 1, 6],
-    #          #2: [38, 38, 38],
-    #          3: [0, 1, 2, 3],
-    #          }
-    #speeds = {0: [1],
-    #          1: [1, 1],
-    #          2: [1, 1.1, 1.2],
-    #          3: [1, 1, 1, 1],
-    #          }
-    #colors = {0 : 'r',
-    #          1 : 'g',
-    #          2: 'y',
-    #          3: 'm'
-    #          }
-
-    #depots = depots[R-1]
-    #speeds = speeds[R-1]
-
-
-    #t = time.time()
 
 
 
@@ -213,10 +191,6 @@ def execute_lp(speeds, depots, colors, C, pts):
 
 
     #Definition of the cost matrix
-    #C = [[0 for i in range(n)] for j in range(n)]
-    #for i in range(n):
-    #    for j in range(n):
-    #        C[i][j] = sqrt((pts[i][0] - pts[j][0]) ** 2 + (pts[i][1] - pts[j][1]) ** 2)
     C = np.matrix(C)
     for r in range(R):
         exec('C_%d = C/float(speeds[r])' % (r))
@@ -235,12 +209,8 @@ def execute_lp(speeds, depots, colors, C, pts):
     #"""
     C_check0 = [0 for i in range(len(C))]
     C_check1 = [0 for i in range(len(C))]
-    #C_check0 = C[0]
-    #C_check1 = C[1]
     for r in range(R):
         exec ('C_%d = np.matrix(C_%d)' % (r, r))
-        #exec ('H_curr = ' % (r))
-        #countEdge = 0
         for i in range(n):
             for j in range(n):
                 gamma = 5
@@ -249,23 +219,13 @@ def execute_lp(speeds, depots, colors, C, pts):
                 heuristica = (heuristica_i+heuristica_j)/2.0
                 exec ('C_%d[i,j] = C_%d[i,j] + gamma*heuristica' % (r, r))
 
+            #Only to plot (after) the values of the heuristic costs
             if r == 0:
                 C_check0[i] = gamma*heuristica
-                #print 'r = ', 0
             if r == 1:
                 C_check1[i] = gamma*heuristica
-                #print 'r = ', 1
-                z=0
-            """
-            print pts[depots[r]]
-            print pts[i]
-            print C[depots[r]][i]
-            print depots[r], '\n'
-            """
-        #C = np.matrix(C)
-        #exec ('C_%d = C/float(speeds[r])' % (r))
+
         exec ('C_%d = C_%d.tolist()' % (r, r))
-    #C = C.tolist()
     #"""
     """
     for r in range(R):
@@ -436,8 +396,6 @@ def execute_lp(speeds, depots, colors, C, pts):
     print '\nsize of AF:', len(AF),'x',len(AF[0])
     print '\nbF = ', bF
     """
-    #AF = []
-    #bF = []
     #----------  ----------  ----------  ----------  ----------  ----------
 
 
@@ -491,7 +449,7 @@ def execute_lp(speeds, depots, colors, C, pts):
         e.append(-1)
     # ----------  ----------  ----------
 
-    # Definition of the integer variable
+    # Definition of the integer variables
     int_var = range(1, R*m + 1, 1)
     #int_var = []
     # ----------  ----------  ----------
@@ -508,7 +466,6 @@ def execute_lp(speeds, depots, colors, C, pts):
     lp = lp_maker(c, A, b, e, vlb, vub, int_var, scalemode, setminim)
     TIMEOUT = 2.0 #seconds
     lpsolve('set_timeout', lp, TIMEOUT)
-    #print '\n\n\n\n\n\n\n\n\n\n\n\n\n'
     print '\nLP problem created'
     print 'Nodes:', n
     print 'Robots: ', R
@@ -525,7 +482,6 @@ def execute_lp(speeds, depots, colors, C, pts):
 
     lpsolve('delete_lp', lp)
 
-    #elapsed = time.time() - t
 
     print ''
     if(solvestat == 0):
@@ -611,17 +567,9 @@ def execute_lp(speeds, depots, colors, C, pts):
 
     #write_results_to_file(**locals())
 
-    #ZZZpylab.show()
     #pylab.show()
 
-    """
-    print '\n\nAAAAAAAAAAAAAAAAAAAAAAAAAAAA:'
-    print '\n\nHere is C_check0:'
-    print C_check0
-    print '\n\nHere is C_check1:'
-    print C_check1
-    print '\n\nAAAAAAAAAAAAAAAAAAAAAAAAAAAA:'
-    """
+
 
     return x, C_check0, C_check1
     #  ----------  ----------  ----------  ----------

@@ -36,22 +36,22 @@ def MSTconnect(edgeset_all, robot_start_node, cor):
 
 
 
-    #Create a set of nodes that must be visited by MST
+    #Given the selected edges, create a set of nodes that must be visited by MST
     nodeset_all = []
     for edge in edgeset_all:
         [fr, to, cx, cy, cost] = myLib.getCoefs(edge - 1, PolC)
         nodeset_all.append(fr)
         nodeset_all.append(to)
+    #Add the node where the robot is
     nodeset_all.append(robot_start_node)
+    #Exclude repeated nodes
     nodeset_all = list(set(nodeset_all))
-
-
-
+    #Sort the nodes acording to their indexes
     nodeset_all = sorted(nodeset_all)
 
 
 
-    # Obtain a subgraph that consins only the selected nodes
+    # Obtain a subgraph that contains only the selected nodes
     CA = np.matrix(C)
     CcomA = np.matrix(Ccom)
     exclude_list = []
@@ -73,8 +73,7 @@ def MSTconnect(edgeset_all, robot_start_node, cor):
     MSTarrayA = (np.matrix(MSTA.toarray())+(np.matrix(MSTA.toarray())).T).tolist()
 
 
-
-    #Create a list of final edges INTERSECTION OF DISCNECTED GRAPH and MST
+    #Create a list of final edges (INTERSECTION OF DISCNECTED GRAPH and MST)
     final_list = []
     for iA in range(len(MSTarrayA)):
         for jA in range(len(MSTarrayA)):
@@ -83,27 +82,24 @@ def MSTconnect(edgeset_all, robot_start_node, cor):
                 j = nodeset_all[jA] - 1
                 path_i_j = myLib.getNodePath(i,j,PathM)
 
-                # Loop for conections composed by more than one
+                # Loop for conections composed by more than one direct edge
                 for count in range(len(path_i_j) - 1):
                     # Get the position of the edge in the list
                     [edge, signal] = myLib.getEdge(path_i_j[count], path_i_j[count + 1], PolC)
 
                     # Get the polynomial coefficients of the edge
-                    [fr, to, cx, cy, cost] = myLib.getCoefs(edge, PolC)
+                    #[fr, to, cx, cy, cost] = myLib.getCoefs(edge, PolC)
 
                     final_list.append(edge+1)
-    final_list = final_list+edgeset_all #add the initaial edges
+    #Make the union of the outputs of TA and MST
+    final_list = final_list+edgeset_all
     final_list = list(set(final_list))
 
 
 
 
-
-    #ZZZpylab.figure(3)
-    #ZZZpylab.axis('equal')
-    #ZZZpylab.axis(w_s)
-    #ZZZpylab.title('Final connected graph')
-    #pylab.figure(3)
+    #Plot the results of the MST based algorithm
+    # ----------  ----------  ---------- ----------
     pylab.axis('equal')
     pylab.axis(w_s)
     pylab.title('Final connected graph')
@@ -122,21 +118,11 @@ def MSTconnect(edgeset_all, robot_start_node, cor):
                 y[-1] = y[-1] + cy[6 - k - 1] * p ** k
 
         if  e+1 in  final_list:
-            #ZZZpylab.plot(x, y, cor, linewidth=4.0,)
-            pylab.plot(x, y, cor, linewidth=4.0,)
-            z = 0
+            pylab.plot(x, y, cor, linewidth=4.0)
         else:
-            #ZZZpylab.plot(x, y, 'k--', linewidth=1.0)
             pylab.plot(x, y, 'k--', linewidth=1.0)
-            z = 0
-
-    """
-    print 'final_list:'
-    print final_list
-    """
-
-    # ZZZpylab.show()
-    #pylab.show()
+    # pylab.show()
+    # ----------  ----------  ---------- ----------
 
 
 
