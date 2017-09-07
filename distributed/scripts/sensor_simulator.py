@@ -29,7 +29,7 @@ rho = 4
 global DIST_INTO # Radius to enter in the communication graph
 global DIST_LEAVE # Radius to leave the communication graph
 DIST_INTO = 2.5
-DIST_LEAVE = 4.5
+DIST_LEAVE = 5.5
 
 global flag_0, flag_1
 flag_0 = 0
@@ -98,7 +98,9 @@ def callback_hist_0(data):
     H_0['T_a'] = data.T_a
     H_0['T_f'] = data.T_f
     H_0['currEdge'] = data.currEdge
+    H_0['nextNode'] = data.nextNode
     H_0['pose'] = data.pose
+    H_0['lastMeeting'] = list(data.lastMeeting)
 
 
 
@@ -118,7 +120,9 @@ def callback_hist_1(data):
     H_1['T_a'] = data.T_a
     H_1['T_f'] = data.T_f
     H_1['currEdge'] = data.currEdge
+    H_1['nextNode'] = data.nextNode
     H_1['pose'] = data.pose
+    H_1['lastMeeting'] = list(data.lastMeeting)
 
     #print 'H_1 received'
 
@@ -136,46 +140,60 @@ def send_message_recompute_close(pub_comm_graph):
 
     global H_0, H_1, HL
 
+    #print 'lastMeeting robot 0:', H_0['lastMeeting']
+    #print 'lastMeeting robot 1:', H_1['lastMeeting']
 
-    HL = HistList()
-
-    HL.comGraphEvent = True
-
-    #Adding information from robot 0
-    H = History()
-    H.e_v = H_0['e_v']
-    H.e_uv = H_0['e_uv']
-    H.e_g = H_0['e_g']
-    H.T_a = H_0['T_a']
-    H.T_f = H_0['T_f']
-    H.currEdge = H_0['currEdge']
-    H.pose = H_0['pose']
-    HL.robList.append(0)
-    HL.velocityList.append(1)
-    HL.listOfH.append(H)
+    #print 'H_0_last != H_1_last', H_0['lastMeeting'] != H_1['lastMeeting']
 
 
-    # Adding information from robot 1
-    H = History()
-    H.e_v = H_1['e_v']
-    H.e_uv = H_1['e_uv']
-    H.e_g = H_1['e_g']
-    H.T_a = H_1['T_a']
-    H.T_f = H_1['T_f']
-    H.currEdge = H_1['currEdge']
-    H.pose = H_1['pose']
-    HL.robList.append(1)
-    HL.velocityList.append(1.1)
-    HL.listOfH.append(H)
+    if (H_0['lastMeeting'] != H_1['lastMeeting'] or H_0['lastMeeting'] == []):  # Check if there is new information
+    #if (H_0['lastMeeting'] != H_1['lastMeeting'] or H_1['lastMeeting'] != []):  # Check if there is new information
+        HL = HistList()
 
-    pub_comm_graph.publish(HL)
+        HL.comGraphEvent = True
 
-    """
-    print '\nHere is  H_0:'
-    print H_0
-    print '\nHere is  H_1:'
-    print H_1
-    """
+        #Adding information from robot 0
+        H = History()
+        H.e_v = H_0['e_v']
+        H.e_uv = H_0['e_uv']
+        H.e_g = H_0['e_g']
+        H.T_a = H_0['T_a']
+        H.T_f = H_0['T_f']
+        H.currEdge = H_0['currEdge']
+        H.nextNode = H_0['nextNode']
+        H.pose = H_0['pose']
+        H.lastMeeting = H_0['lastMeeting']
+        HL.robList.append(0)
+        HL.velocityList.append(0.4)
+        HL.listOfH.append(H)
+
+
+        # Adding information from robot 1
+        H = History()
+        H.e_v = H_1['e_v']
+        H.e_uv = H_1['e_uv']
+        H.e_g = H_1['e_g']
+        H.T_a = H_1['T_a']
+        H.T_f = H_1['T_f']
+        H.currEdge = H_1['currEdge']
+        H.nextNode = H_1['nextNode']
+        H.pose = H_1['pose']
+        H.lastMeeting = H_1['lastMeeting']
+        HL.robList.append(1)
+        HL.velocityList.append(0.55)
+        HL.listOfH.append(H)
+
+        pub_comm_graph.publish(HL)
+
+        """
+        print '\nHere is  H_0:'
+        print H_0
+        print '\nHere is  H_1:'
+        print H_1
+        """
+    else:
+        HL.comGraphEvent = True
+        print 'Meeting happen but there is no new information'
 
 
     return
@@ -198,14 +216,16 @@ def sensor_simulator():
          'e_g': [],
          'T_a': [],
          'T_f': [],
-         'currEdge': None
+         'currEdge': None,
+         'lastMeeting': []
     }
     H_1 = {'e_v': [],
          'e_uv': [],
          'e_g': [],
          'T_a': [],
          'T_f': [],
-         'currEdge': None
+         'currEdge': None,
+         'lastMeeting': []
     }
 
 

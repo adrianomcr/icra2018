@@ -5,4 +5,6 @@ int16[] e_g
 int16[] T_a
 int16[] T_f
 int16   currEdge
+int16   nextNode
 float32[]   pose
+int16[] lastMeeting

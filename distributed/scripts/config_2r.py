@@ -160,6 +160,85 @@ def send_marker_to_rviz():
 
 
 
+# Routine to send the communication range to rviz
+def send_comm_range_to_rviz(circ_x0,circ_y0):
+
+    global x_n, y_n, theta_n
+    global x_n1, y_n1, theta_n1
+
+
+    points_marker = MarkerArray()
+    marker = Marker()
+    #for p0 in range(1, 628, 1):
+    for p in range(len(circ_x0)):
+        #print "p0 = ", p0
+        #p = p0 / 100.0
+        #x = cos(phi) * (a * cos(p)) - sin(phi) * (b * sin(p)) + cx * 1
+        #y = sin(phi) * (a * cos(p)) + cos(phi) * (b * sin(p)) + cy * 1
+        #x = circ_x0 + x_n1
+        #y = circ_y0 + y_n1
+        marker = Marker()
+        marker.header.frame_id = "/world"
+        marker.header.stamp = rospy.Time.now()
+        marker.id = p - 1
+        marker.type = marker.SPHERE
+        marker.action = marker.ADD
+        marker.scale.x = 0.05
+        marker.scale.y = 0.05
+        marker.scale.z = 0.05
+        marker.color.a = 1.0
+        marker.color.r = 0.0
+        marker.color.g = 0.0
+        marker.color.b = 1.0
+        marker.pose.orientation.w = 1.0
+        marker.pose.position.x = circ_x0[p] + x_n
+        marker.pose.position.y = circ_y0[p] + y_n
+        marker.pose.position.z = 0.1
+        #print "marker = ", marker
+        points_marker.markers.append(marker)
+    circle_blue = points_marker
+
+
+
+
+    points_marker = MarkerArray()
+    marker = Marker()
+    #for p0 in range(1, 628, 1):
+    for p in range(len(circ_x0)):
+        #print "p0 = ", p0
+        #p = p0 / 100.0
+        #x = cos(phi) * (a * cos(p)) - sin(phi) * (b * sin(p)) + cx * 1
+        #y = sin(phi) * (a * cos(p)) + cos(phi) * (b * sin(p)) + cy * 1
+        #x = circ_x0 + x_n1
+        #y = circ_y0 + y_n1
+        marker = Marker()
+        marker.header.frame_id = "/world"
+        marker.header.stamp = rospy.Time.now()
+        marker.id = p - 1
+        marker.type = marker.SPHERE
+        marker.action = marker.ADD
+        marker.scale.x = 0.05
+        marker.scale.y = 0.05
+        marker.scale.z = 0.05
+        marker.color.a = 1.0
+        marker.color.r = 1.0
+        marker.color.g = 0.0
+        marker.color.b = 0.0
+        marker.pose.orientation.w = 1.0
+        marker.pose.position.x = circ_x0[p] + x_n1
+        marker.pose.position.y = circ_y0[p] + y_n1
+        marker.pose.position.z = 0.1
+        #print "marker = ", marker
+        points_marker.markers.append(marker)
+    circle_red = points_marker
+
+
+
+
+    return circle_blue, circle_red
+
+# ----------  ----------  ----------  ----------  ----------
+
 
 
 
@@ -184,6 +263,8 @@ def config():
 
     pub_pose = rospy.Publisher("/marker_pose", Marker, queue_size=1)
     pub_pose1 = rospy.Publisher("/marker_pose1", Marker, queue_size=1)
+    pub_circ0 = rospy.Publisher("/marker_circ0", MarkerArray, queue_size=1)
+    pub_circ1 = rospy.Publisher("/marker_circ1", MarkerArray, queue_size=1)
     rospy.init_node("config")
     rospy.Subscriber("/robot_0/base_pose_ground_truth", Odometry, callback_pose)
     rospy.Subscriber("/robot_1/base_pose_ground_truth", Odometry, callback_pose1)
@@ -194,6 +275,13 @@ def config():
 
     freq = 10.0  # Hz
     rate = rospy.Rate(freq)
+
+    p = [2*pi*i/50.0 for i in range(50)]
+    R = 2.5
+    #circ_x0 = np.matrix([R*cos(i) for i in p])
+    #circ_y0 = np.matrix([R*sin(i) for i in p])
+    circ_x0 = [R*cos(i) for i in p]
+    circ_y0 = [R*sin(i) for i in p]
 
 
     sleep(1)
@@ -208,6 +296,11 @@ def config():
         br.sendTransform((0, 0, 0), (0, 0, 0, 1), rospy.Time.now(), "/map", "world")
 
         send_marker_to_rviz()
+
+        [circle_blue, circle_red] = send_comm_range_to_rviz(circ_x0,circ_y0)
+
+        pub_circ0.publish(circle_blue)
+        pub_circ1.publish(circle_red)
 
         rate.sleep()
 

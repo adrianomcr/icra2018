@@ -17,7 +17,10 @@ import library2018 as myLib
 
 
 
-def MSTconnect(edgeset_all, cor):
+def MSTconnect(edgeset_all, robot_start_node, cor):
+
+    # edges_all -> list of edges that where assigned to the robot
+    # robot_start -> node in which the robot starts
 
 
     #Read original graph
@@ -39,6 +42,7 @@ def MSTconnect(edgeset_all, cor):
         [fr, to, cx, cy, cost] = myLib.getCoefs(edge - 1, PolC)
         nodeset_all.append(fr)
         nodeset_all.append(to)
+    nodeset_all.append(robot_start_node)
     nodeset_all = list(set(nodeset_all))
 
 
@@ -70,7 +74,7 @@ def MSTconnect(edgeset_all, cor):
 
 
 
-    #Create a list of final edges
+    #Create a list of final edges INTERSECTION OF DISCNECTED GRAPH and MST
     final_list = []
     for iA in range(len(MSTarrayA)):
         for jA in range(len(MSTarrayA)):
@@ -99,7 +103,7 @@ def MSTconnect(edgeset_all, cor):
     #ZZZpylab.axis('equal')
     #ZZZpylab.axis(w_s)
     #ZZZpylab.title('Final connected graph')
-    pylab.figure(3)
+    #pylab.figure(3)
     pylab.axis('equal')
     pylab.axis(w_s)
     pylab.title('Final connected graph')
@@ -132,7 +136,7 @@ def MSTconnect(edgeset_all, cor):
     """
 
     # ZZZpylab.show()
-    pylab.show()
+    #pylab.show()
 
 
 

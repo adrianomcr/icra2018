@@ -17,6 +17,7 @@ import scipy.io
 import pylab
 import rospkg
 import sys
+import os
 
 rp = rospkg.RosPack()
 path = rp.get_path('distributed')
@@ -37,8 +38,8 @@ pose = [0.1, 0.2, 0.001] # [x, y, theta]
 
 global d  # for feedback linearization
 d = 0.07
-global Vd
-Vd = 0.25*2
+#global Vd
+#Vd = 0.5
 global time
 time = 0
 global Kp  # Proportional gain
@@ -118,7 +119,7 @@ def callback_comm_graph(data):
         print 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa'
         """
 
-        print '\nCommunication graph Event Received\n'
+        print '\n          ---------- Communication graph event received ----------\n'
         print 'Finishing Edge ...'
 
         """
@@ -156,20 +157,24 @@ def callback_new_plan(data):
             Hole_path = [current_node]
             Hole_path = Hole_path + aux
         # ----------  ----------  ----------  ----------
-        print 'Here is Hole_path:'
-        print Hole_path
+        #print 'Here is Hole_path:'
+        #print Hole_path
         Hmsg = data.listOfH[id]
-        print 'Here is Hmsg:'
-        print Hmsg
+        #print 'Here is Hmsg:'
+        #print Hmsg
         H['e_v'] = list(Hmsg.e_v)
         H['e_uv'] = list(Hmsg.e_uv)
         H['e_g'] = list(Hmsg.e_g)
         H['T_a'] = list(Hmsg.T_a)
         H['T_f'] = list(Hmsg.T_f)
-        print 'Here is new H:'
-        print H
-        #H['currEdge'] = data.currEdge
-        #H['pose'] = data.pose
+        H['lastMeeting'] = list(Hmsg.lastMeeting)
+        # print 'Here is new H:'
+        # print H
+
+        print 'Here is list(Hmsg.lastMeeting):'
+        print list(Hmsg.lastMeeting)
+
+        print '\n     ----- New plan received -----'
 
 
 
@@ -229,6 +234,8 @@ def Algorithm_1():
     my_str = '/robot_' + str(id) + '/history'
     pub_hist = rospy.Publisher(my_str, History, queue_size=1)
     my_str = 'follow_graph_' + str(id)
+    rospy.init_node(my_str)
+    #print 'my_str = ', my_str
     rospy.init_node(my_str)
     my_str = '/robot_' + str(id) + '/base_pose_ground_truth'
     rospy.Subscriber(my_str, Odometry, callback_pose)
@@ -304,6 +311,8 @@ def Algorithm_1():
 
         time = count / float(freq)
 
+        #print '\npathNode = ', pathNode, '\n'
+
         if not waitting_new_plan:
             if not replan_tasks:
                 # Keep moving through the current edge
@@ -323,47 +332,50 @@ def Algorithm_1():
                         #Compute the replanning
                         vel.linear.x, vel.angular.z = 0, 0
                         pub_stage.publish(vel)
-                        print 'list_of_H:'
-                        print list_of_H
-                        print 'list_of_robs:'
-                        print list_of_robs
-                        print 'list_of_vels:'
-                        print list_of_vels
+                        #print 'list_of_H:'
+                        #print list_of_H
+                        #print 'list_of_robs:'
+                        #print list_of_robs
+                        #print 'list_of_vels:'
+                        #print list_of_vels
                         change_plan, Hole_path_list, new_Hists = Alg2.replanning(original_graph,virtual_graph,list_of_H, list_of_robs, list_of_vels)
-                        pylab.close("all")
+                        #pylab.close("all")
 
                         #"""
                         #Broadcast to other robots
-                        print '\nCreating Broadcast message\n'
+                        print '\nCreating Broadcast message ...\n'
                         B = Broadcast()
                         B.sender = id
                         B.destinations = [0,1]
                         IL = Intlist()
-                        print 'Here is Hole_path_list[0]'
-                        print Hole_path_list[0]
+                        #print 'Here is Hole_path_list[0]'
+                        #print Hole_path_list[0]
                         IL.data = list(Hole_path_list[0])
-                        print 'Here is IL'
-                        print IL
-                        print 'Here is type(IL)'
-                        print type(IL)
+                        #print 'Here is IL'
+                        #print IL
+                        #print 'Here is type(IL)'
+                        #print type(IL)
                         B.new_Hole_paths.append(IL)
                         IL = Intlist()
-                        print 'Here is Hole_path_list[0]'
-                        print Hole_path_list[0]
+                        #print 'Here is Hole_path_list[0]'
+                        #print Hole_path_list[0]
                         IL.data = list(Hole_path_list[1])
-                        print 'Here is IL'
-                        print IL
+                        #print 'Here is IL'
+                        #print IL
                         B.new_Hole_paths.append(IL)
                         #B.new_Hole_paths = Hole_path_list
                         B.listOfH = new_Hists
 
                         print '\nHere is B:'
                         print B
-                        print '\n'
+                        #print '\n'
                         #"""
+
 
                         waitting_new_plan = True
                         pub_broadcast.publish(B)
+                        print 'New plan broadcasted'
+
 
                         #sleep(0.5)
 
@@ -381,7 +393,13 @@ def Algorithm_1():
                         waitting_new_plan = True
 
 
+            """
             if end_flag or len(H['e_uv'])==0:
+                vel.linear.x, vel.angular.z = 0, 0
+                pub_stage.publish(vel)
+                break
+            """
+            if end_flag:
                 vel.linear.x, vel.angular.z = 0, 0
                 pub_stage.publish(vel)
                 break
@@ -401,7 +419,9 @@ def Algorithm_1():
 
             #Publish the history
             Hmsg = History()
-            Hmsg.e_v, Hmsg.e_uv, Hmsg.e_g, Hmsg.T_a, Hmsg.T_f, Hmsg.currEdge, Hmsg.pose = H['e_v'], H['e_uv'], H['e_g'], H['T_a'], H['T_f'], edge, pose
+            #Hmsg.e_v, Hmsg.e_uv, Hmsg.e_g, Hmsg.T_a, Hmsg.T_f, Hmsg.currEdge, Hmsg.pose = H['e_v'], H['e_uv'], H['e_g'], H['T_a'], H['T_f'], edge, pose
+            #Hmsg.e_v, Hmsg.e_uv, Hmsg.e_g, Hmsg.T_a, Hmsg.T_f, Hmsg.currEdge, Hmsg.pose = H['e_v'], H['e_uv'], H['e_g'], H['T_a'], H['T_f'], Hole_path[0], pose
+            Hmsg.e_v, Hmsg.e_uv, Hmsg.e_g, Hmsg.T_a, Hmsg.T_f, Hmsg.currEdge, Hmsg.nextNode, Hmsg.pose, Hmsg.lastMeeting = H['e_v'], H['e_uv'], H['e_g'], H['T_a'], H['T_f'], edge, pathNode[0], pose, H['lastMeeting']
             pub_hist.publish(Hmsg)
 
             #Wait
@@ -418,6 +438,7 @@ def Algorithm_1():
         vel.linear.x = 0
         vel.angular.z = 0
         pub_stage.publish(vel)
+
         #break
 
 
@@ -434,9 +455,15 @@ def Algorithm_1():
 # Initial function
 if __name__ == '__main__':
 
+
+
+    print '__________ __________ __________ __________ __________ __________ __________'
+    print '\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n'
+
     global id
     global number_robots #Used only foor creating the topics
     global H
+    global Vd
     number_robots = 2
 
     if len(sys.argv) < 2:
@@ -444,6 +471,12 @@ if __name__ == '__main__':
     else:
         id = int(sys.argv[1])
         #id = int(id)
+
+
+    if id == 0:
+        Vd = 0.40
+    elif id == 1:
+        Vd = 0.55
 
 
     rp = rospkg.RosPack()
@@ -468,7 +501,8 @@ if __name__ == '__main__':
     e_g = [] # assigned to other robots
     T_a = [] # list of list of robots assigned to an edge
     T_f = [] # list of list of robots forbidden to visit an edge
-    H = {'e_v': e_v, 'e_uv': e_uv, 'e_g': e_g, 'T_a': T_a, 'T_f': T_f}
+    lastMeeting = [] #list of who was in the communicatio graph in the last meeting
+    H = {'e_v': e_v, 'e_uv': e_uv, 'e_g': e_g, 'T_a': T_a, 'T_f': T_f, 'lastMeeting': lastMeeting}
 
 
     virtual_graph = myLib.read_graph('Virtual_graph_36.mat')
@@ -479,6 +513,14 @@ if __name__ == '__main__':
         Algorithm_1()
     except rospy.ROSInterruptException:
         pass
+
+
+    """
+    if rospy.is_shutdown:
+        string_cmd = "gnome-terminal -x bash -c 'killall python'"
+        os.system(string_cmd)
+    """
+
 
 
     file_path.close()

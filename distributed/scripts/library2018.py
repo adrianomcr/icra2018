@@ -11,6 +11,48 @@ import rospkg
 import scipy.io
 
 
+
+
+
+
+#Function that finds the node that connects two edges
+def find_commom_node(ed1, ed2, PolC):
+    [fr1, to1, cx, cy, cost] = getCoefs(ed1, PolC)
+    [fr2, to2, cx, cy, cost] = getCoefs(ed2, PolC)
+
+    if(fr1 == fr2):
+        return fr1
+    elif (fr1 == to2):
+        return fr1
+    elif (fr2 == to1):
+        return fr2
+    elif (fr2 == to2):
+        return fr2
+
+    return -1 #Error
+# ----------  ----------  ----------  ----------  ----------
+
+#"""
+#Function that finds the node (original graph) that corresponds to an edge (virtual graph)
+def find_node_of_edge(edge, PolC_ori, PolC_virt):
+
+    [fr, to, cx, cy, cost] = getCoefs(edge, PolC_virt)
+
+    return -1 #Error
+# ----------  ----------  ----------  ----------  ----------
+#"""
+
+
+
+
+
+
+
+
+
+
+
+
 # Function to define the closest node from a given position
 def get_current_node(graph,pose):
     nodes = graph['nodes']
@@ -301,7 +343,7 @@ def repulsive_potential(laserVec, pose, ux, uy):
     do = 0.35
     if laserVec[index] < do:
         phi = (-135 + index) * pi / 180.0  # angle of the object in the local frame
-        print 'phi = ', phi
+        #print 'phi = ', phi
         theta = pose[2]
         beta = phi + theta  # angle of the object in the world frame
         grad_ob = [cos(beta), sin(beta)]
@@ -310,7 +352,7 @@ def repulsive_potential(laserVec, pose, ux, uy):
         vy_repulsive = -gain * grad_ob[1]
         ux = ux + vx_repulsive
         uy = uy + vy_repulsive
-        print '                                       !!!!! Repulsive potential active !!!!!'
+        #print '                                       !!!!! Repulsive potential active !!!!!'
 
     """
     if laserVec[135] < 0.15:
@@ -359,6 +401,10 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
             VX = 0
             WZ = 0
     if new_path == 1:
+        if len(H['e_uv']) == 0:
+            VX, WZ = 0, 0
+            end_flag = True
+            return H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, VX, WZ, end_flag, edge, change_edge
         i = pathNode.pop(0)
         j = pathNode[0]
         T = C[i - 1][j - 1] / Vd

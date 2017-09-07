@@ -156,9 +156,13 @@ def write_results_to_file(*args, **kwargs):
 
 def execute_lp(speeds, depots, colors, C, pts):
 
-    # list_robs -> list of robots index
-    # list_vels - list of the velocities corresponded to each robot
+    # speeds -> list of robots speeds
+    # depots -> list of robots depots points
+    # colors -> list of color types in char representation ('b', 'r', 'g', ...)
     # C -> distance cost matrix
+    # pts -> list of nodes positions
+    # PolC -> polinomial coefficients for the virtual graph (ONLY TO PLOT THE RESULT)
+    # set_uv -> list of active edges (ONLY TO PLOT THE RESULT)
 
     n = len(C) #number of nodes
     m = n * (n - 1) #number of edges
@@ -229,21 +233,35 @@ def execute_lp(speeds, depots, colors, C, pts):
 
     #Addition of the heuristic cost based on EUCLIDIAN DISTANCE
     #"""
+    C_check0 = [0 for i in range(len(C))]
+    C_check1 = [0 for i in range(len(C))]
+    #C_check0 = C[0]
+    #C_check1 = C[1]
     for r in range(R):
         exec ('C_%d = np.matrix(C_%d)' % (r, r))
+        #exec ('H_curr = ' % (r))
+        #countEdge = 0
         for i in range(n):
             for j in range(n):
-                #C[i][j] = sqrt((pts[i][0] - pts[j][0]) ** 2 + (pts[i][1] - pts[j][1]) ** 2)
-                #medium = [(pts[i][0] + pts[j][0])/2, (pts[i][1] + pts[j][1])/2]
-                #C[i][j] = C[i][j] + sqrt((medium[0] - pts[depots[r]][0]) ** 2 + (medium[1] - pts[depots[r]][1]) ** 2)
-                heuristica = [(pts[i][0] + pts[j][0])/2, (pts[i][1] + pts[j][1])/2]
-                heuristica = sqrt((heuristica[0] - pts[depots[r]][0]) ** 2 + (heuristica[1] - pts[depots[r]][1]) ** 2)
-                #print C_0
-                #print C_0[i, j]
-                #print heuristica
-                #print 'C_%d[i,j] = C_%d[i,j] + heuristica' % (r, r)
-                gamma = 0.2
+                gamma = 5
+                heuristica_i = C[depots[r]][i]
+                heuristica_j = C[depots[r]][j]
+                heuristica = (heuristica_i+heuristica_j)/2.0
                 exec ('C_%d[i,j] = C_%d[i,j] + gamma*heuristica' % (r, r))
+
+            if r == 0:
+                C_check0[i] = gamma*heuristica
+                #print 'r = ', 0
+            if r == 1:
+                C_check1[i] = gamma*heuristica
+                #print 'r = ', 1
+                z=0
+            """
+            print pts[depots[r]]
+            print pts[i]
+            print C[depots[r]][i]
+            print depots[r], '\n'
+            """
         #C = np.matrix(C)
         #exec ('C_%d = C/float(speeds[r])' % (r))
         exec ('C_%d = C_%d.tolist()' % (r, r))
@@ -548,7 +566,9 @@ def execute_lp(speeds, depots, colors, C, pts):
         print '\nElapsed time: ', elapsed, 's\n'
 
 
+
     #Plotting results  ----------  ----------  ----------
+    """
     #ZZZpylab.axis('equal')
     #ZZZpylab.axis(w_s)
     pylab.axis('equal')
@@ -579,6 +599,12 @@ def execute_lp(speeds, depots, colors, C, pts):
                         #ZZZpylab.plot([pts[i][0],pts[j][0]], [pts[i][1],pts[j][1]],colors[r],linewidth=3.0)
                         pylab.plot([pts[i][0],pts[j][0]], [pts[i][1],pts[j][1]],colors[r],linewidth=3.0)
                         z = 0
+    """
+
+
+
+
+
 
 
 
@@ -586,9 +612,18 @@ def execute_lp(speeds, depots, colors, C, pts):
     #write_results_to_file(**locals())
 
     #ZZZpylab.show()
-    pylab.show()
+    #pylab.show()
 
-    return x
+    """
+    print '\n\nAAAAAAAAAAAAAAAAAAAAAAAAAAAA:'
+    print '\n\nHere is C_check0:'
+    print C_check0
+    print '\n\nHere is C_check1:'
+    print C_check1
+    print '\n\nAAAAAAAAAAAAAAAAAAAAAAAAAAAA:'
+    """
+
+    return x, C_check0, C_check1
     #  ----------  ----------  ----------  ----------
 
 

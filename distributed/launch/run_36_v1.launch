@@ -6,8 +6,8 @@
 <node pkg = "stage_ros" name = "stageros" type = "stageros" output = "screen" args="-d $(find distributed)/worlds/map_36_2r.world">
 </node>
 
-<!--node pkg = "rviz" name = "rviz" type = "rviz" args="-d $(find distributed)/rviz/rviz_config_2r.rviz" output="screen">
-</node-->
+<node pkg = "rviz" name = "rviz" type = "rviz" args="-d $(find distributed)/rviz/rviz_config_2r.rviz" output="screen">
+</node>
 
 <node pkg = "distributed" name = "config_node" type = "config_2r.py" output="screen">
 </node>

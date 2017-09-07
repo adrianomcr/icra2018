@@ -11,6 +11,8 @@ Panels:
         - /Marker1
         - /LaserScan2
         - /Marker2
+        - /MarkerArray1
+        - /MarkerArray2
       Splitter Ratio: 0.494186
     Tree Height: 719
   - Class: rviz/Selection
@@ -141,6 +143,22 @@ Visualization Manager:
       Enabled: true
       Marker Topic: /marker_pose1
       Name: Marker
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /marker_circ0
+      Name: MarkerArray
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /marker_circ1
+      Name: MarkerArray
       Namespaces:
         "": true
       Queue Size: 100
