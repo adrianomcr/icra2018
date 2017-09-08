@@ -9,7 +9,6 @@ from lpsolve55 import *
 from lp_maker import *
 import rospkg
 import scipy.io
-
 from scipy.spatial import distance
 
 """
@@ -384,17 +383,30 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
     return H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, VX, WZ, end_flag, edge, change_edge
 # ----------  ----------  ----------  ----------  ----------
 
-def CheckOnSP(pos,Threshold):
-    global SP
-    a = np.array([[pos[0],pos[1]]])
-    distance.cdist(a, SP, 'euclidean')
-    d=abs(pos[0]-SP[0][0])+abs(pos[1]-SP[1][1])
-    if d<Threshold:
-        return 1
-    return 0
+def CheckOnSP(pos,SP,Threshold):
+    posn=np.array([pos[1],pos[0]])
+    d1=(posn-SP)**2
+    d=np.sqrt(d1[:,0]+d1[:,1])
+    for i in range(0,len(SP)):
+        #print (d[i])
+        if (d[i]<float(Threshold)):
+            SPnew=np.delete(SP[:,0:2],i,0)
+            return SPnew,1
+    return SP,0
 # ----------  ----------  ----------  ----------  ----------
 
 def  ReadSearchPoints(name):
+    rp = rospkg.RosPack()
+    path = rp.get_path('distributed')
+    path = path + '/maps/' + name
+    SPfile=open(path,"r")
+    #SP=SPfile.readlines()
+    '''mat = scipy.io.loadmat(path)
+    g = mat['graph']
+    n = g['number_nodes']
     global SP
-    SP=[[10,10],[20,20]]
-    return SP
+    SP=[[10,10],[20,20]]'''
+    line_list=SPfile.readlines()
+    SP=[[int(val) for val in line.split()] for line in line_list[0:] ]
+    SP1=np.array(SP)
+    return SP1

@@ -27,9 +27,7 @@ import cppsolver
 import library2018 as myLib
 import Algorithm_2 as Alg2
 
-
-
-
+global SP # search points
 global pose
 pose = [0.1, 0.2, 0.001] # [x, y, theta]
 global d  # for feedback linearization
@@ -180,8 +178,7 @@ def Algorithm_1():
     global waitting_new_plan
     global new_task
     global original_graph
-    global SP # search point set
-    SP=myLib.ReadSearchPoints('SP.mat')
+    global SP
 
     vel = Twist()
 
@@ -300,10 +297,28 @@ def Algorithm_1():
                 pub_stage.publish(vel)
                 break
 
+            #----------------------------------------
+
             # Check if the robot is on the search point
-            Threshold=5 # if the distance of robot is less than threshold
-            if (myLib.CheckOnSP(pose,Threshold)):
+            # if ...
+            # if robot is on its unvisited edges
+
+            Threshold=0.4 # if the distance of robot is less than threshold
+            out=myLib.CheckOnSP(pose[0:2], SP, Threshold)
+            SP2=np.array(out[0])
+
+            if (out[1]):
+                SP=SP2 # searched point is removed in the new SP set
                 print 'Robot is located on a search point.'
+                cnt=0
+
+                while(cnt<5): # robot rotates and search based on its Searching Speed
+
+                    #Publish the computed speed to stage
+                    rate.sleep()
+                    vel.linear.x, vel.angular.z = 0, 2+Robot_Search_Speed[id]
+                    pub_stage.publish(vel)
+                    cnt=cnt+0.1
 
             #Publish the computed speed to stage
             vel.linear.x, vel.angular.z = VX, WZ
@@ -352,7 +367,14 @@ if __name__ == '__main__':
     global number_robots #Used only foor creating the topics
     global H
     global Vd
+    global SP
+
+    # set robot searching speed
+    global Robot_Search_Speed
+    Robot_Search_Speed=[0.4,0.8] # for two robots, smaller is faster
+
     number_robots = 2
+
 
     #Read the robots index
     if len(sys.argv) < 2:
@@ -395,6 +417,9 @@ if __name__ == '__main__':
 
     # Read the virtual graph
     virtual_graph = myLib.read_graph('Virtual_graph_36.mat')
+
+    # Read search point set
+    SP=myLib.ReadSearchPoints("Map_36_SP.txt")
 
 
     # Start running Algorithm 1
