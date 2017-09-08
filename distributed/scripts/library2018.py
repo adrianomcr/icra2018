@@ -10,9 +10,7 @@ from lp_maker import *
 import rospkg
 import scipy.io
 
-
-
-
+from scipy.spatial import distance
 
 """
 #Function that finds the node that connects two edges
@@ -385,3 +383,18 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
 
     return H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, VX, WZ, end_flag, edge, change_edge
 # ----------  ----------  ----------  ----------  ----------
+
+def CheckOnSP(pos,Threshold):
+    global SP
+    a = np.array([[pos[0],pos[1]]])
+    distance.cdist(a, SP, 'euclidean')
+    d=abs(pos[0]-SP[0][0])+abs(pos[1]-SP[1][1])
+    if d<Threshold:
+        return 1
+    return 0
+# ----------  ----------  ----------  ----------  ----------
+
+def  ReadSearchPoints(name):
+    global SP
+    SP=[[10,10],[20,20]]
+    return SP

@@ -180,6 +180,8 @@ def Algorithm_1():
     global waitting_new_plan
     global new_task
     global original_graph
+    global SP # search point set
+    SP=myLib.ReadSearchPoints('SP.mat')
 
     vel = Twist()
 
@@ -298,6 +300,10 @@ def Algorithm_1():
                 pub_stage.publish(vel)
                 break
 
+            # Check if the robot is on the search point
+            Threshold=5 # if the distance of robot is less than threshold
+            if (myLib.CheckOnSP(pose,Threshold)):
+                print 'Robot is located on a search point.'
 
             #Publish the computed speed to stage
             vel.linear.x, vel.angular.z = VX, WZ
