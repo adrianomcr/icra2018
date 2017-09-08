@@ -303,22 +303,23 @@ def Algorithm_1():
             # if ...
             # if robot is on its unvisited edges
 
-            Threshold=0.4 # if the distance of robot is less than threshold
-            out=myLib.CheckOnSP(pose[0:2], SP, Threshold)
-            SP2=np.array(out[0])
+            Threshold=0.20 # if the distance of robot is less than threshold
+            [SP,closeFlag]=myLib.CheckOnSP(pose[0:2], SP, Threshold)
+            #SP2=np.array(SP)
 
-            if (out[1]):
-                SP=SP2 # searched point is removed in the new SP set
-                print 'Robot is located on a search point.'
+            #if (closeFlag and edge in H['e_uv']):
+            if (closeFlag and edge == (H['e_v'])[-1]):
+                #SP=SP2 # searched point is removed in the new SP set
+                print 'Robot searching in a search point ...'
                 cnt=0
 
-                while(cnt<5): # robot rotates and search based on its Searching Speed
+                while(cnt<2*pi): # robot rotates and search based on its Searching Speed
 
                     #Publish the computed speed to stage
                     rate.sleep()
-                    vel.linear.x, vel.angular.z = 0, 2+Robot_Search_Speed[id]
+                    vel.linear.x, vel.angular.z = 0, Robot_Search_Speed[id]
                     pub_stage.publish(vel)
-                    cnt=cnt+0.1
+                    cnt=cnt+(1/freq)*Robot_Search_Speed[id]
 
             #Publish the computed speed to stage
             vel.linear.x, vel.angular.z = VX, WZ
@@ -371,7 +372,7 @@ if __name__ == '__main__':
 
     # set robot searching speed
     global Robot_Search_Speed
-    Robot_Search_Speed=[0.4,0.8] # for two robots, smaller is faster
+    Robot_Search_Speed=[pi/2,pi/2] # for two robots, smaller is faster
 
     number_robots = 2
 

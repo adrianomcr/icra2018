@@ -384,7 +384,7 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
 # ----------  ----------  ----------  ----------  ----------
 
 def CheckOnSP(pos,SP,Threshold):
-    posn=np.array([pos[1],pos[0]])
+    posn=np.array([pos[0],pos[1]])
     d1=(posn-SP)**2
     d=np.sqrt(d1[:,0]+d1[:,1])
     for i in range(0,len(SP)):
@@ -407,6 +407,6 @@ def  ReadSearchPoints(name):
     global SP
     SP=[[10,10],[20,20]]'''
     line_list=SPfile.readlines()
-    SP=[[int(val) for val in line.split()] for line in line_list[0:] ]
+    SP=[[float(val) for val in line.split()] for line in line_list[0:] ]
     SP1=np.array(SP)
     return SP1
