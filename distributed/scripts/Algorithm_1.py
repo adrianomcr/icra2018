@@ -430,8 +430,8 @@ if __name__ == '__main__':
     e_v = [] # visited
     e_uv = range(1,len(PolC[0])+1) # unvisited (must be visited)
     e_g = [] # assigned to other robots
-    T_a = [] # list of list of robots assigned to an edge
-    T_f = [] # list of list of robots forbidden to visit an edge
+    T_a = [[] for i in range(len(PolC[0]))] # list of list of robots assigned to an edge
+    T_f = [[] for i in range(len(PolC[0]))] # list of list of robots forbidden to visit an edge
     lastMeeting = [] #list of who was in the communicatio graph in the last meeting
     H = {'id': id, 'specs': [Vd, Vs], 'e_v': e_v, 'e_uv': e_uv, 'e_g': e_g, 'T_a': T_a, 'T_f': T_f, 'lastMeeting': lastMeeting}
 

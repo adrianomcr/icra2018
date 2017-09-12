@@ -196,41 +196,6 @@ def send_message_recompute_close(pub_comm_graph, ids):
         HL.comGraphEvent = True
         meeting_matrix[ids[0]][ids[1]] = True
 
-        """
-        #Adding information from robot 0
-        H = History()
-        H.id = H_0['id']
-        H.specs = H_0['specs']
-        H.e_v = H_0['e_v']
-        H.e_uv = H_0['e_uv']
-        H.e_g = H_0['e_g']
-        H.T_a = H_0['T_a']
-        H.T_f = H_0['T_f']
-        H.currEdge = H_0['currEdge']
-        H.nextNode = H_0['nextNode']
-        H.pose = H_0['pose']
-        H.lastMeeting = H_0['lastMeeting']
-        HL.robList.append(0)
-        #HL.velocityList.append(0.4)
-        HL.listOfH.append(H)
-
-        # Adding information from robot 1
-        H = History()
-        H.id = H_1['id']
-        H.specs = H_1['specs']
-        H.e_v = H_1['e_v']
-        H.e_uv = H_1['e_uv']
-        H.e_g = H_1['e_g']
-        H.T_a = H_1['T_a']
-        H.T_f = H_1['T_f']
-        H.currEdge = H_1['currEdge']
-        H.nextNode = H_1['nextNode']
-        H.pose = H_1['pose']
-        H.lastMeeting = H_1['lastMeeting']
-        HL.robList.append(1)
-        #HL.velocityList.append(0.55)
-        HL.listOfH.append(H)
-        """
         # Adding information from robot 0
         H = History()
         H.id = H_A['id']
