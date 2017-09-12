@@ -29,7 +29,7 @@ import Algorithm_2 as Alg2
 
 
 
-
+global SP # search points
 global pose
 pose = [0.1, 0.2, 0.001] # [x, y, theta]
 global d  # for feedback linearization
@@ -89,7 +89,7 @@ def callback_laser(data):
 # ----------  ----------  ----------  ----------  ----------
 
 
-# Callback routine to obtain data from another robot
+# Callback routine to obtain data from the sensor simulator
 def callback_comm_graph(data):
     # This function recieves messages from the centralized sensor simulator
 
@@ -97,26 +97,32 @@ def callback_comm_graph(data):
 
     global replan_tasks, finish_edge, id
 
-    if data.comGraphEvent == True:
-        replan_tasks = True
-        finish_edge = False
-        list_of_H = data.listOfH
-        list_of_robs = data.robList
-        list_of_vels = data.velocityList
+    R = len(data.listOfH)
+    ids = []
+    for r in range(R):
+        ids.append(data.listOfH[r].id)
 
-        print '\n          ---------- Communication graph event received ----------\n'
-        print 'Finishing Edge ...'
+    if id in ids:
+        if data.comGraphEvent == True:
+            replan_tasks = True
+            finish_edge = False
+            list_of_H = data.listOfH
+            list_of_robs = data.robList
+            #list_of_vels = data.velocityList
 
-        """
-        print "\nHere is robList:"
-        print data.robList
-        print "\nHere is velocityList:"
-        print data.velocityList
-        print "\nHere is listOfH[0]:"
-        print data.listOfH[0]
-        print "\nHere is listOfH[1]:"
-        print data.listOfH[1]
-        """
+            print '\n          ---------- Communication graph event received ----------\n'
+            print 'Finishing Edge ...'
+
+            """
+            print "\nHere is robList:"
+            print data.robList
+            print "\nHere is velocityList:"
+            print data.velocityList
+            print "\nHere is listOfH[0]:"
+            print data.listOfH[0]
+            print "\nHere is listOfH[1]:"
+            print data.listOfH[1]
+            """
 
     return
 # ----------  ----------  ----------  ----------  ----------
@@ -135,9 +141,12 @@ def callback_new_plan(data):
     #If the current robot is one of the ones the replanning rout is destinated to
     if id in data.destinations:
 
-        Hole_path = list(data.new_Hole_paths[id].data)
+        position = data.destinations.index(id)
 
-        Hmsg = data.listOfH[id]
+        #Hole_path = list(data.new_Hole_paths[id].data)
+        Hole_path = list(data.new_Hole_paths[position].data)
+
+        Hmsg = data.listOfH[position]
 
         H['e_v'] = list(Hmsg.e_v)
         H['e_uv'] = list(Hmsg.e_uv)
@@ -180,6 +189,7 @@ def Algorithm_1():
     global waitting_new_plan
     global new_task
     global original_graph
+    global SP
 
     vel = Twist()
 
@@ -199,7 +209,7 @@ def Algorithm_1():
     rospy.Subscriber("/comm_graph", HistList, callback_comm_graph) #Subscribe to eventually receive communication graph event (other robots close)
 
     #Read/Write in the topic of new plan
-    pub_broadcast = rospy.Publisher('/new_path_topic', Broadcast, queue_size=1) #Eventually publish new routes to other robots
+    pub_broadcast = rospy.Publisher('/new_path_topic', Broadcast, queue_size=4) #Eventually publish new routes to other robots
     rospy.Subscriber('/new_path_topic',Broadcast,callback_new_plan) #Eventually receive a new route
 
     freq = 10.0  # Frequency of operation in Hz
@@ -220,9 +230,13 @@ def Algorithm_1():
     if(id == 0):
         Hole_path = [1, 2, 14, 13, 12, 10, 11, 9, 8, 7, 24, 25, 26, 27, 3]
         Hole_path = [1, 2, 3, 4, 5, 6, 1, 2, 14, 13, 12, 10, 11, 9, 8, 7, 24, 25, 26, 27, 3]
-    elif(id == 1):
+    elif (id == 1):
         Hole_path = [30, 28, 24, 23, 22, 21, 32, 17, 3]
         Hole_path = [30, 28, 24, 25, 26, 27, 30, 28, 24, 23, 22, 21, 32, 17, 3]
+        Hole_path = [30, 28, 24, 23, 22, 31, 20, 7, 1, 30, 28, 24, 23, 22, 21, 32, 17, 3]
+    elif (id == 2):
+        Hole_path = []
+        Hole_path = [33, 15, 16, 29, 21, 22, 31, 11]
     """
 
 
@@ -265,20 +279,28 @@ def Algorithm_1():
                         pub_stage.publish(vel)
 
                         # Call the replanning function (Algorithm 2)
-                        change_plan, Hole_path_list, new_Hists = Alg2.replanning(original_graph,virtual_graph,list_of_H, list_of_robs, list_of_vels)
+                        change_plan, Hole_path_list, new_Hists = Alg2.replanning(original_graph,virtual_graph,list_of_H)
                         pylab.close("all")
 
                         #Broadcast new plan to other robots
                         print '\nCreating Broadcast message ...\n'
                         B = Broadcast()
                         B.sender = id
-                        B.destinations = [0,1]
-                        IL = Intlist()
-                        IL.data = list(Hole_path_list[0])
-                        B.new_Hole_paths.append(IL)
-                        IL = Intlist()
-                        IL.data = list(Hole_path_list[1])
-                        B.new_Hole_paths.append(IL)
+                        R = len(new_Hists)
+                        B.destinations = []
+                        for r in range(R):
+                            B.destinations.append(new_Hists[r].id)
+                        #B.destinations = [0,1]
+                        for r in range(R):
+                            IL = Intlist()
+                            IL.data = list(Hole_path_list[r])
+                            B.new_Hole_paths.append(IL)
+                        #IL = Intlist()
+                        #IL.data = list(Hole_path_list[0])
+                        #B.new_Hole_paths.append(IL)
+                        #IL = Intlist()
+                        #IL.data = list(Hole_path_list[1])
+                        #B.new_Hole_paths.append(IL)
                         B.listOfH = new_Hists
 
                         print 'New plan broadcasted'
@@ -298,6 +320,29 @@ def Algorithm_1():
                 pub_stage.publish(vel)
                 break
 
+            # ----------------------------------------
+
+            # Check if the robot is on the search point
+            # if ...
+            # if robot is on its unvisited edges
+
+            Threshold = 0.20  # if the distance of robot is less than threshold
+            [SP, closeFlag] = myLib.CheckOnSP(pose[0:2], SP, Threshold)
+
+            if (closeFlag and edge == (H['e_v'])[-1]):
+                print 'Robot searching in a search point ...'
+                cnt = 0
+
+                while (cnt < 2 * pi):  # robot rotates and search based on its Searching Speed
+                    # Publish the computed speed to stage
+                    rate.sleep()
+                    vel.linear.x, vel.angular.z = 0, Vs
+                    pub_stage.publish(vel)
+                    cnt = cnt + (1 / freq) * Vs
+
+
+
+
 
             #Publish the computed speed to stage
             vel.linear.x, vel.angular.z = VX, WZ
@@ -312,7 +357,7 @@ def Algorithm_1():
 
             #Publish the History to the centralized communication simulator in order to keep it actualized
             Hmsg = History()
-            Hmsg.e_v, Hmsg.e_uv, Hmsg.e_g, Hmsg.T_a, Hmsg.T_f, Hmsg.currEdge, Hmsg.nextNode, Hmsg.pose, Hmsg.lastMeeting = H['e_v'], H['e_uv'], H['e_g'], H['T_a'], H['T_f'], edge, pathNode[0], pose, H['lastMeeting']
+            Hmsg.id, Hmsg.specs, Hmsg.e_v, Hmsg.e_uv, Hmsg.e_g, Hmsg.T_a, Hmsg.T_f, Hmsg.currEdge, Hmsg.nextNode, Hmsg.pose, Hmsg.lastMeeting = id, [Vd, Vs], H['e_v'], H['e_uv'], H['e_g'], H['T_a'], H['T_f'], edge, pathNode[0], pose, H['lastMeeting']
             pub_hist.publish(Hmsg)
 
             #Wait
@@ -345,7 +390,8 @@ if __name__ == '__main__':
     global id
     global number_robots #Used only foor creating the topics
     global H
-    global Vd
+    global Vd, Vs #moving speed, search speeds
+    global SP
     number_robots = 2
 
     #Read the robots index
@@ -355,10 +401,12 @@ if __name__ == '__main__':
         id = int(sys.argv[1])
 
     #Define the characteristics of the robot given its ID
-    if id == 0:
-        Vd = 0.40
-    elif id == 1:
-        Vd = 0.55
+    # set robot searching speed
+    Vs = [pi / 2, pi / 2, pi / 4] #search speeds (rad/s)
+    Vd = [0.4, 0.55, 0.7] #moving speeds (m/s)
+    Vs = Vs[id]
+    Vd = Vd[id]
+
 
     #Open txt files to write results of positions and velocities
     rp = rospkg.RosPack()
@@ -385,11 +433,13 @@ if __name__ == '__main__':
     T_a = [] # list of list of robots assigned to an edge
     T_f = [] # list of list of robots forbidden to visit an edge
     lastMeeting = [] #list of who was in the communicatio graph in the last meeting
-    H = {'e_v': e_v, 'e_uv': e_uv, 'e_g': e_g, 'T_a': T_a, 'T_f': T_f, 'lastMeeting': lastMeeting}
+    H = {'id': id, 'specs': [Vd, Vs], 'e_v': e_v, 'e_uv': e_uv, 'e_g': e_g, 'T_a': T_a, 'T_f': T_f, 'lastMeeting': lastMeeting}
 
     # Read the virtual graph
     virtual_graph = myLib.read_graph('Virtual_graph_36.mat')
 
+    # Read search point set
+    SP = myLib.ReadSearchPoints("Map_36_SP.txt")
 
     # Start running Algorithm 1
     try:

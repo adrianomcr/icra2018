@@ -30,7 +30,7 @@ axis equal
 %Adds the path to the graph library
 addpath('./graphutils')
 
-graph = struct('number_nodes',[],'node_list',[],'edge_matrix',[],'complete_edge_matrix',[],'map_edge_matrix',[],'path_matrix',[],'w_s',[],'Pol_coefs',[]);
+graph = struct('number_nodes',[],'node_list',[],'edge_matrix',[],'complete_edge_matrix',[],'complete_SP_matrix',[],'map_edge_matrix',[],'path_matrix',[],'w_s',[],'Pol_coefs',[]);
 
 graph.w_s = w_s;
 graph.number_nodes = 36;
@@ -231,3 +231,56 @@ save('./output_structure/Original_graph_36.mat','graph')
 
 
 
+
+
+
+% 
+% figure(1)
+% hold on
+% xv = []; yv = [];
+% for k = 1:1:50
+%     [x,y] = ginput(1);
+%     xv(end+1) = x;
+%     yv(end+1) = y;
+%     disp(k)
+% end
+% hold off
+% load('SPs.mat','xv','yv')
+% figure(1)
+% hold on
+% for k = 1:1:length(xv)
+%     plot(xv(k),yv(k),'.g','MarkerSize',20)
+% end
+hold off
+% FILE=fopen('Map_36_SP.txt','w');
+% for k = 1:1:length(xv)
+%     fprintf(FILE,'%.4f\t%.4f\n',xv(k),yv(k));
+% end
+% fclose(FILE)
+
+
+%Load the search points files
+M = dlmread('./../distributed/maps/Map_36_SP.txt');
+figure(1)
+hold on
+plot(M(:,1),M(:,2),'.g','MarkerSize',20)
+hold off
+
+%In he original graph
+% N_SP = [1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40]
+N_SP = [2, 7, 4, 2, 2, 4, 3, 3, 4, 2, 2, 3, 2, 5, 5, 5, 3, 3, 3, 2, 3, 2, 3, 3, 2, 3, 2, 2, 5, 4, 3, 4, 3, 1, 2, 2, 2, 3, 3, 2];
+C_sp = zeros(graph.number_nodes,graph.number_nodes);
+for i = 1:1:graph.number_nodes
+    for j = 1:1:graph.number_nodes
+        if (i ~= j)
+            p = graph.path_matrix(i,j);
+            e = graph.map_edge_matrix(p.path(end-1),p.path(end));
+            C_sp(i,j) = N_SP(e);
+        end
+    end
+end
+graph.complete_SP_matrix = C_sp;
+
+
+% Save structure
+save('./output_structure/Original_graph_36.mat','graph')

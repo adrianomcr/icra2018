@@ -17,6 +17,7 @@ number_nodes = graph.number_nodes;
 node_list = graph.node_list;
 edge_matrix = graph.edge_matrix;
 complete_edge_matrix = graph.complete_edge_matrix;
+complete_SP_matrix = graph.complete_SP_matrix;
 map_edge_matrix = graph.map_edge_matrix;
 path_matrix = graph.path_matrix;
 w_s = graph.w_s;
@@ -112,7 +113,8 @@ hold off
 %%
 figure(2)
 %creating the new edge matrix
-E = zeros(length(Pol_coefs),length(Pol_coefs));
+E = zeros(length(Pol_coefs),length(Pol_coefs)); %Cost matrix (length)
+E_sp = zeros(length(Pol_coefs),length(Pol_coefs)); %Cost matrix (search points)
 % Ed_virtual_matrix = [];
 n_edges = 0;
 for k = 1:1:number_virtual_nodes
@@ -128,6 +130,10 @@ for k = 1:1:number_virtual_nodes
             if(k > k2)
                 %E(k,k2) = E(k,k2)+1;
                 E(k,k2) = edge_matrix(i,j)/2+edge_matrix(i,m)/2;
+                E_sp(k,k2) = complete_SP_matrix(i,j)/2+complete_SP_matrix(i,m)/2;
+                disp([k,k2])
+                disp(complete_SP_matrix(i,j)/2+complete_SP_matrix(i,m)/2)
+%                 disp([k,k2])
                 n_edges = n_edges + 1;
                 
 %                 Ed_virtual_matrix(n_edges) = struct('from',k,'to',k2,'coef_x',[],'coef_y',[],'cost',E(k,k2));
@@ -192,6 +198,10 @@ for k = 1:1:number_virtual_nodes
             if(k > k2)
                 %E(k,k2) = E(k,k2)+1;
                 E(k,k2) = edge_matrix(i,j)/2+edge_matrix(j,m)/2;
+                E_sp(k,k2) = complete_SP_matrix(i,j)/2+complete_SP_matrix(j,m)/2;
+                disp([k,k2])
+                disp(complete_SP_matrix(i,j)/2+complete_SP_matrix(j,m)/2)
+%                 disp([k,k2])
                 n_edges = n_edges + 1;
                 Ed_virtual_matrix(n_edges) = struct('from',k,'to',k2,'coef_x',[],'coef_y',[],'cost',E(k,k2));
                 %Compute polynomial
@@ -259,6 +269,7 @@ for k = 1:1:number_virtual_nodes
     
 end
 E = E+E';
+E_sp = E_sp+E_sp';
 
 % figure(1)
 hold on
@@ -346,10 +357,28 @@ end
 
 
 
+%Creating the complete SP cost matrix
+for i = 1:1:number_virtual_nodes
+    for j = 1:1:number_virtual_nodes
+        if (i ~= j)
+            p = Paths(i,j);
+            %disp(p)
+            %e = graph.map_edge_matrix(p.path(end-1),p.path(end));
+            E_sp(i,j) = E_sp(p.path(end-1),p.path(end));
+        end
+    end
+end
+
+
+
+
+
+
 graph3.number_nodes = number_virtual_nodes;
 graph3.node_list = virtual_node_list;
 graph3.edge_matrix = E;
 graph3.complete_edge_matrix = complete_edge_matrix_virtual;
+graph3.complete_SP_matrix = E_sp;
 graph3.map_edge_matrix = map_edge_matrix_virtual;
 graph3.path_matrix = Paths;
 graph3.w_s = w_s;
@@ -357,8 +386,4 @@ graph3.Pol_coefs = Ed_virtual_matrix;
 
 graph = graph3;
 save('./output_structure/Virtual_graph_36.mat','graph')
-
-
-
-
 

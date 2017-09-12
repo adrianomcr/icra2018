@@ -154,7 +154,7 @@ def write_results_to_file(*args, **kwargs):
 
 
 
-def execute_lp(speeds, depots, colors, C, pts):
+def execute_lp(speeds, search_speeds, depots, colors, C, C_sp, pts):
 
     # speeds -> list of robots speeds
     # depots -> list of robots depots points
@@ -192,10 +192,14 @@ def execute_lp(speeds, depots, colors, C, pts):
 
     #Definition of the cost matrix
     C = np.matrix(C)
+    C_sp = np.matrix(C_sp)
     for r in range(R):
-        exec('C_%d = C/float(speeds[r])' % (r))
+        #exec('C_%d = C/float(speeds[r])' % (r))
+        #exec('C_%d = C_%d.tolist()' % (r,r))
+        exec('C_%d = C/float(speeds[r]) + C_sp*(2*pi/float(search_speeds[r]))' % (r))
         exec('C_%d = C_%d.tolist()' % (r,r))
     C = C.tolist()
+    C_sp = C_sp.tolist()
     """
     for r in range(R):
         print ''
@@ -213,7 +217,7 @@ def execute_lp(speeds, depots, colors, C, pts):
         exec ('C_%d = np.matrix(C_%d)' % (r, r))
         for i in range(n):
             for j in range(n):
-                gamma = 5
+                gamma = 1
                 heuristica_i = C[depots[r]][i]
                 heuristica_j = C[depots[r]][j]
                 heuristica = (heuristica_i+heuristica_j)/2.0
@@ -379,7 +383,7 @@ def execute_lp(speeds, depots, colors, C, pts):
             for j in range(n):
                 if (i != j):
                     k = k + 1
-                    AF[r][k+r*m] = C[i][j]
+                    #AF[r][k+r*m] = C[i][j]
                     exec('AF[r][k+r*m] = C_%d[i][j]' % r)
     bF = [0 for i in range(R)]
     #Adding 'F' variable
@@ -464,7 +468,7 @@ def execute_lp(speeds, depots, colors, C, pts):
 
 
     lp = lp_maker(c, A, b, e, vlb, vub, int_var, scalemode, setminim)
-    TIMEOUT = 2.0 #seconds
+    TIMEOUT = 1.0 #seconds
     lpsolve('set_timeout', lp, TIMEOUT)
     print '\nLP problem created'
     print 'Nodes:', n

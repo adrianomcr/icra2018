@@ -37,8 +37,11 @@ def define_subsets(list_of_H,virtual_graph):
 
     pts_0 = virtual_graph['nodes']
 
-    H0 = list_of_H[0] #History of robot 0
-    H1 = list_of_H[1] #History of robot 1
+    R = len(list_of_H)
+    for r in range(R):
+        exec ('H%d = list_of_H[%d]' % (r, r))
+    #H0 = list_of_H[0] #History of robot 0
+    #H1 = list_of_H[1] #History of robot 1
 
     set_uv = []
     set_v = []
@@ -57,14 +60,34 @@ def define_subsets(list_of_H,virtual_graph):
 
 
 
-def replanning(original_graph, virtual_graph, list_of_H, list_of_robs, list_of_vels):
+def replanning(original_graph, virtual_graph, list_of_H):
 
+    colors_0 = ['b', 'r', 'g', 'y']
+    #colors_0 = ['y', 'g', 'b', 'r', 'g']
 
     # 'change_plan' is True if the new plan is better than the old one
     change_plan = False
 
-    H0 = list_of_H[0] #History of robot 0
-    H1 = list_of_H[1] #History of robot 1
+    R = len(list_of_H)
+    #print 'Here is R:', R
+
+    speeds = []
+    search_speeds = []
+    colors = []
+    for r in range(R):
+        exec ('H%d = list_of_H[%d]' % (r, r))
+        exec ('speeds.append(H%d.specs[0])' % r)
+        exec ('search_speeds.append(H%d.specs[1])' % r)
+        exec ('colors.append(colors_0[H%d.id])' % r)
+
+    #H0 = list_of_H[0] #History of robot 0
+    #H1 = list_of_H[1] #History of robot 1
+    #speeds = [H0.specs[0], H1.specs[0]]
+    #search_speeds = [H0.specs[1], H1.specs[1]]
+    #colors = ['b', 'r']
+
+
+
 
 
     set_uv, set_v, pts = define_subsets(list_of_H,virtual_graph)
@@ -76,31 +99,47 @@ def replanning(original_graph, virtual_graph, list_of_H, list_of_robs, list_of_v
 
 
 
+
+
     # Map the unvisited nodes with new labels
-    C = virtual_graph['Ccom']
+    C = virtual_graph['Ccom'] #matrix with the length costs
     Cuv = np.matrix(C) # Reduced cost matrix with only the unvisited edges (unvisited virtual nodes)
+    C = virtual_graph['C_sp'] #matrix with the number of search points
+    Cuv_sp = np.matrix(C) # Reduced cost matrix with only the unvisited edges (unvisited virtual nodes)
     exclude_list = (np.array(set_v)-1).tolist()
     Cuv = np.delete(Cuv, exclude_list, 0) # exclude lines
     Cuv = np.delete(Cuv, exclude_list, 1) # exclude columns
     Cuv = Cuv.tolist()
+    Cuv_sp = np.delete(Cuv_sp, exclude_list, 0) # exclude lines
+    Cuv_sp = np.delete(Cuv_sp, exclude_list, 1) # exclude columns
+    Cuv_sp = Cuv_sp.tolist()
+
 
 
     # Define the depot virtual nodes for the task assignment
-    depots = [set_uv.index(H0.currEdge), set_uv.index(H1.currEdge)]
-    speeds = [0.4, 0.55]
-    colors = ['b', 'r']
+    depots = []
+    for r in range(R):
+        exec ('depots.append(set_uv.index(H%d.currEdge))' % r)
+
+
+
 
     print '\nHere is depot virtual nodes (new indexes):'
     print depots
     print 'Here is depot virtual nodes (original indexes):'
-    print [set_uv[depots[0]], set_uv[depots[1]]], '\n'
+    depots_ori = []
+    for r in range(R):
+        depots_ori.append(set_uv[depots[r]])
+    print depots_ori, '\n'
 
 
 
 
 
     print '\n ----- Task assignment function called -----'
-    [sol, C_check0, C_check1] = TA.execute_lp(speeds, depots, colors, Cuv, pts)
+    [sol, C_check0, C_check1] = TA.execute_lp(speeds, search_speeds, depots, colors, Cuv, Cuv_sp, pts)
+
+
 
 
     # ----------  ----------  ----------  ----------  ----------  ----------  ----------
@@ -111,15 +150,21 @@ def replanning(original_graph, virtual_graph, list_of_H, list_of_robs, list_of_v
     # Map the solution back to the original indexes
     n_uv = len(Cuv)
     m_uv = n_uv*(n_uv-1)
-    x1_var = []
-    x2_var = []
+    for r in range(R):
+        exec('x%d_var = []' % r)
+    #x0_var = []
+    #x1_var = []
 
 
     F_var = sol.pop()
-    for k in range(m_uv):
-        x2_var.insert(0,sol.pop())
-    for k in range(m_uv):
-        x1_var.insert(0,sol.pop())
+    for r in range(R):
+        for k in range(m_uv):
+            #print 'AAAAAAAAAAAA', R-r-1
+            exec('x%d_var.insert(0,sol.pop())' % (R-r-1))
+    #for k in range(m_uv):
+    #    x1_var.insert(0,sol.pop())
+    #for k in range(m_uv):
+    #    x0_var.insert(0,sol.pop())
 
 
 
@@ -130,32 +175,42 @@ def replanning(original_graph, virtual_graph, list_of_H, list_of_robs, list_of_v
         for j in range(n_uv):
             if i!=j:
                 k = k+1
-                if (x1_var[k] == 1):
-                    division[0].append(i)
-                    division[0].append(j)
-                if (x2_var[k] == 1):
-                    division[1].append(i)
-                    division[1].append(j)
-    division[0] = list(set(division[0]))
-    division[1] = list(set(division[1]))
+                for r in range(R):
+                    exec('xAux_var = x%d_var' % r)
+                    if (xAux_var[k] == 1):
+                        division[r].append(i)
+                        division[r].append(j)
+                #if (x0_var[k] == 1):
+                #    division[0].append(i)
+                #    division[0].append(j)
+                #if (x1_var[k] == 1):
+                #    division[1].append(i)
+                #    division[1].append(j)
+    for r in range(R):
+        division[r] = list(set(division[r]))
+    #division[0] = list(set(division[0]))
+    #division[1] = list(set(division[1]))
 
 
 
     #Map the nodes back to the original indexation
-    for k in range(len(division[0])):
-        division[0][k] = set_uv[division[0][k]]
-    for k in range(len(division[1])):
-        division[1][k] = set_uv[division[1][k]]
+    for r in range(R):
+        for k in range(len(division[r])):
+            division[r][k] = set_uv[division[r][k]]
+    #for k in range(len(division[0])):
+    #    division[0][k] = set_uv[division[0][k]]
+    #for k in range(len(division[1])):
+    #    division[1][k] = set_uv[division[1][k]]
 
 
     # Excludie the used depot virtual nodes (they are edges that were already visited)
-    for r in range(2):
+    for r in range(R):
         division[r].pop(division[r].index(list_of_H[r].currEdge))
 
 
     print '\nAssigned edges for the robots:'
-    for k in range(2):
-        print 'Subset for robot ' + str(k) + ': ', division[k]
+    for r in range(R):
+        print 'Subset for robot ' + str(r) + ': ', division[r]
     print '\n'
     # ----------  ----------  ----------  ----------  ----------  ----------  ----------
 
@@ -193,10 +248,10 @@ def replanning(original_graph, virtual_graph, list_of_H, list_of_robs, list_of_v
 
         if e+1 in division[0]:
             pylab.subplot(2, 2, 1)
-            pylab.plot(x, y, 'b', linewidth=4.0)
+            pylab.plot(x, y, colors[0], linewidth=4.0)
         if e+1 in division[1]:
             pylab.subplot(2, 2, 2)
-            pylab.plot(x, y, 'r', linewidth=4.0)
+            pylab.plot(x, y, colors[1], linewidth=4.0)
     # ----------  ----------  ----------  ----------  ----------  ----------  ----------
 
 
@@ -214,11 +269,11 @@ def replanning(original_graph, virtual_graph, list_of_H, list_of_robs, list_of_v
     # Call MST for every robot in the communication graph in order to make the graph connected
     print '\n ----- Applying MST to the disconnected subgraphs ------'
     subgraphs = []
-    for r in range(2):
+    for r in range(R):
         subgraphs.append([])
         pylab.subplot(2,2,r+3)
         subgraphs[r] = MST.MSTconnect(division[r], (list_of_H[r]).nextNode, colors[r])
-    for r in range(2):
+    for r in range(R):
         print 'Subset of edges for robot ' + str(r) + ': (original indexes)\n', subgraphs[r]
         print 'Start node for robot ' + str(r) + ':', (list_of_H[r]).nextNode
     # ----------  ----------  ----------  ----------  ----------
@@ -263,21 +318,41 @@ def replanning(original_graph, virtual_graph, list_of_H, list_of_robs, list_of_v
     # Cal CPP for every graph generated by the MST based algorithm
     print '\nApplying CPP to the connected subgraphs'
     Hole_path_list = []
-    for k in range(2):
+    for k in range(R):
         Hole_path_list.append([])
         current_node = (list_of_H[k]).nextNode
         edges_listOfTuples = myLib.write_listOfTuples(original_graph, subgraphs[k])
         Hole_path_list[k] = cppsolver.CPP(sorted(edges_listOfTuples), current_node)
-    for k in range(2):
+    for k in range(R):
         print 'Route for robot ' + str(k), ': ', Hole_path_list[k]
     print '\n'
     # ----------  ----------  ----------  ----------  ----------
 
 
 
+
+    # Create the new list of histories (STILL MUST ADAPT TO A GENERAL NUMBER OF ROBOS)
+    new_Hists = []
+    for r in range(R):
+        H = History()
+        H.id = list_of_H[r].id
+        H.e_v = set_v
+        H.e_uv = division[r]
+        for r2 in range(R):
+            if r2!=r:
+                H.e_g = division[r2]
+        H.T_a = []
+        H.T_f = []
+        H.lastMeeting = []
+        for r2 in range(R):
+            H.lastMeeting.append(list_of_H[r2].id)
+        new_Hists.append(H)
+
+    """  
     # Create the new list of histories (STILL MUST ADAPT TO A GENERAL NUMBER OF ROBOS)
     new_Hists = []
     H = History()
+    H.id = 0
     H.e_v = set_v
     H.e_uv = division[0]
     H.e_g = division[1]
@@ -287,6 +362,7 @@ def replanning(original_graph, virtual_graph, list_of_H, list_of_robs, list_of_v
     new_Hists.append(H)
 
     H = History()
+    H.id = 1
     H.e_v = set_v
     H.e_uv = division[1]
     H.e_g = division[0]
@@ -295,7 +371,7 @@ def replanning(original_graph, virtual_graph, list_of_H, list_of_robs, list_of_v
     H.lastMeeting = [0, 1] #AAAAAAAAAAA
     new_Hists.append(H)
     # ----------  ----------  ----------
-
+    """
 
 
 
@@ -346,6 +422,8 @@ virtual_graph = myLib.read_graph('Virtual_graph_36.mat')
 list_of_H = []
 
 H = History()
+H.id = 0
+H.specs = [0.55, pi/2]
 H.e_v = [1, 14, 13, 19, 20, 18, 21, 36, 22]
 H.e_uv = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15, 16, 17, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 37, 38, 39, 40]
 H.e_g = []
@@ -356,6 +434,8 @@ H.pose = [6.733957290649414, 3.901658535003662, -2.4089980125427246]
 list_of_H.append(H)
 
 H = History()
+H.id = 1
+H.specs = [0.55, pi/2]
 H.e_v = [33, 29, 26, 27, 28, 25]
 H.e_uv = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 30, 31, 32, 34, 35, 36, 37, 38, 39, 40]
 H.e_g = []
@@ -368,18 +448,16 @@ list_of_H.append(H)
 #list_of_H = [H0, H1]
 
 list_of_robs = [0, 1]
-list_of_vels = [1, 1.1]
+#list_of_vels = [1, 1.1]
 
 
-print '\n\nlist_of_H:'
+print '\n\nHere is list_of_H:'
 print list_of_H
-print 'list_of_robs:'
+print 'Here is list_of_robs:'
 print list_of_robs
 
-print 'list_of_vels:'
-print list_of_vels, '\n\n'
 
-change_plan, Hole_path_list, new_Hists = replanning(original_graph,virtual_graph,list_of_H, list_of_robs, list_of_vels)
+change_plan, Hole_path_list, new_Hists = replanning(original_graph,virtual_graph,list_of_H)
 
 
 

@@ -123,6 +123,10 @@ def read_graph(name):
     Ccom = Ccom.tolist()
     Ccom = Ccom[0][0]
     Ccom = Ccom.tolist()
+    C_sp = g['complete_SP_matrix']
+    C_sp = C_sp.tolist()
+    C_sp = C_sp[0][0]
+    C_sp = C_sp.tolist()
     EdgeMap = g['map_edge_matrix']
     EdgeMap = EdgeMap.tolist()
     EdgeMap = EdgeMap[0][0]
@@ -146,6 +150,7 @@ def read_graph(name):
               'nodes': nodes,
               'C': C,
               'Ccom': Ccom,
+              'C_sp': C_sp,
               'EdgeMap': EdgeMap,
               'PathM': PathM,
               'w_s': w_s,
@@ -385,3 +390,35 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
 
     return H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, VX, WZ, end_flag, edge, change_edge
 # ----------  ----------  ----------  ----------  ----------
+
+
+
+
+
+def CheckOnSP(pos,SP,Threshold):
+    posn=np.array([pos[0],pos[1]])
+    d1=(posn-SP)**2
+    d=np.sqrt(d1[:,0]+d1[:,1])
+    for i in range(0,len(SP)):
+        #print (d[i])
+        if (d[i]<float(Threshold)):
+            SPnew=np.delete(SP[:,0:2],i,0)
+            return SPnew,1
+    return SP,0
+# ----------  ----------  ----------  ----------  ----------
+
+def  ReadSearchPoints(name):
+    rp = rospkg.RosPack()
+    path = rp.get_path('distributed')
+    path = path + '/maps/' + name
+    SPfile=open(path,"r")
+    #SP=SPfile.readlines()
+    '''mat = scipy.io.loadmat(path)
+    g = mat['graph']
+    n = g['number_nodes']
+    global SP
+    SP=[[10,10],[20,20]]'''
+    line_list=SPfile.readlines()
+    SP=[[float(val) for val in line.split()] for line in line_list[0:] ]
+    SP1=np.array(SP)
+    return SP1

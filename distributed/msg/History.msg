@@ -1,4 +1,6 @@
 # This expresses the history of a robot
+int16 id
+float32[] specs
 int16[] e_v
 int16[] e_uv
 int16[] e_g
