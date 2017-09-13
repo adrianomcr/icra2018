@@ -4,7 +4,10 @@ float32[] specs
 int16[] e_v
 int16[] e_uv
 int16[] e_g
-int16[] T_a
+#int16[] T_a
+#int16[] T_f
+Intlist[] T_a
+#Intlist[] T_f
 int16[] T_f
 int16   currEdge
 int16   nextNode

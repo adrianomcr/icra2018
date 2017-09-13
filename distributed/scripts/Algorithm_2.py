@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from distributed.msg import History, HistList, Broadcast
+from distributed.msg import History, HistList, Broadcast, Intlist
 from math import sqrt, atan2, exp, atan, cos, sin, acos, pi, asin, atan2
 import numpy as np
 from time import sleep
@@ -33,6 +33,11 @@ def choose_depots():
 
 
 
+
+
+
+
+
 def define_subsets(list_of_H,virtual_graph):
 
     pts_0 = virtual_graph['nodes']
@@ -45,31 +50,55 @@ def define_subsets(list_of_H,virtual_graph):
 
     set_uv = []
     set_v = []
+    set_g = []
     pts = []
-    for k in range(len(pts_0)):
-        if (k+1 in H0.e_v or k+1 in H1.e_v) and k+1 != H0.currEdge and k+1 != H1.currEdge:
+    for k in range(len(pts_0)): #loop over all of the orignal edges
+        if k+1 == H0.currEdge or k+1 == H1.currEdge: #Add the current edges in the unvisited set
+            set_uv.append(k + 1)
+            pts.append(pts_0[k])
+        elif (k+1 in H0.e_v or k+1 in H1.e_v or k+1 in H0.T_f or k+1 in H1.T_f): #Forgot about th visited edges (we are done with them)
             set_v.append(k + 1)
-        else:
+        #elif((k+1 in H0.e_g and (not k+1 in H1.e_uv)) or (k+1 in H1.e_g and (not k+1 in H0.e_uv))): #If the edge is assigned to other robot -> forget it
+        elif ((k + 1 in H0.e_g ) or (k + 1 in H1.e_g)):  # If the edge is assigned to other robot -> forget it
+            if (not(H0.id in H0.T_a[k].data or H0.id in H1.T_a[k].data or H1.id in H0.T_a[k].data or H1.id in H1.T_a[k].data)):
+                print '-> Add to e_g: ', k+1
+                set_g.append(k + 1)
+            else:
+                set_uv.append(k + 1)
+                pts.append(pts_0[k])
+        else: #In other case, we should search on this edge
             set_uv.append(k+1)
             pts.append(pts_0[k])
 
 
 
-    return set_uv,set_v, pts
+    #print 'AAAAAAAAAAAAA: set_g - (inside function)'
+    #print set_g
+
+    return set_uv, set_v, set_g, pts
 # ----------  ----------  ----------  ----------  ----------
+
+
+
+
+
+
 
 
 
 def replanning(original_graph, virtual_graph, list_of_H):
 
+    #print 'Here is list_of_H'
+    #print list_of_H
+
+
+
     colors_0 = ['b', 'r', 'g', 'y']
-    #colors_0 = ['y', 'g', 'b', 'r', 'g']
 
     # 'change_plan' is True if the new plan is better than the old one
     change_plan = False
 
     R = len(list_of_H)
-    #print 'Here is R:', R
 
     speeds = []
     search_speeds = []
@@ -80,22 +109,19 @@ def replanning(original_graph, virtual_graph, list_of_H):
         exec ('search_speeds.append(H%d.specs[1])' % r)
         exec ('colors.append(colors_0[H%d.id])' % r)
 
-    #H0 = list_of_H[0] #History of robot 0
-    #H1 = list_of_H[1] #History of robot 1
-    #speeds = [H0.specs[0], H1.specs[0]]
-    #search_speeds = [H0.specs[1], H1.specs[1]]
-    #colors = ['b', 'r']
 
 
 
 
 
-    set_uv, set_v, pts = define_subsets(list_of_H,virtual_graph)
+    set_uv, set_v, set_g, pts = define_subsets(list_of_H,virtual_graph)
 
     print '\nHere is set_v (visited edges) in original inedexes:'
     print set_v
     print 'Here is set_uv (unvisited edges) in original inedexes:'
-    print set_uv, '\n\n'
+    print set_uv
+    print 'Here is set_g (assigned edges) in original inedexes:'
+    print set_g, '\n\n'
 
 
 
@@ -106,7 +132,8 @@ def replanning(original_graph, virtual_graph, list_of_H):
     Cuv = np.matrix(C) # Reduced cost matrix with only the unvisited edges (unvisited virtual nodes)
     C = virtual_graph['C_sp'] #matrix with the number of search points
     Cuv_sp = np.matrix(C) # Reduced cost matrix with only the unvisited edges (unvisited virtual nodes)
-    exclude_list = (np.array(set_v)-1).tolist()
+    #exclude_list = (np.array(set_v) - 1).tolist()
+    exclude_list = (np.array(set_v) - 1).tolist() + (np.array(set_g) - 1).tolist()
     Cuv = np.delete(Cuv, exclude_list, 0) # exclude lines
     Cuv = np.delete(Cuv, exclude_list, 1) # exclude columns
     Cuv = Cuv.tolist()
@@ -120,7 +147,6 @@ def replanning(original_graph, virtual_graph, list_of_H):
     depots = []
     for r in range(R):
         exec ('depots.append(set_uv.index(H%d.currEdge))' % r)
-
 
 
 
@@ -152,19 +178,14 @@ def replanning(original_graph, virtual_graph, list_of_H):
     m_uv = n_uv*(n_uv-1)
     for r in range(R):
         exec('x%d_var = []' % r)
-    #x0_var = []
-    #x1_var = []
+
 
 
     F_var = sol.pop()
     for r in range(R):
         for k in range(m_uv):
-            #print 'AAAAAAAAAAAA', R-r-1
             exec('x%d_var.insert(0,sol.pop())' % (R-r-1))
-    #for k in range(m_uv):
-    #    x1_var.insert(0,sol.pop())
-    #for k in range(m_uv):
-    #    x0_var.insert(0,sol.pop())
+
 
 
 
@@ -180,37 +201,32 @@ def replanning(original_graph, virtual_graph, list_of_H):
                     if (xAux_var[k] == 1):
                         division[r].append(i)
                         division[r].append(j)
-                #if (x0_var[k] == 1):
-                #    division[0].append(i)
-                #    division[0].append(j)
-                #if (x1_var[k] == 1):
-                #    division[1].append(i)
-                #    division[1].append(j)
     for r in range(R):
         division[r] = list(set(division[r]))
-    #division[0] = list(set(division[0]))
-    #division[1] = list(set(division[1]))
+
 
 
 
     #Map the nodes back to the original indexation
+    #print 'Here is set_uv'
+    #print set_uv
+    #print 'Here is division'
+    #print division
     for r in range(R):
         for k in range(len(division[r])):
+            #print r, k
             division[r][k] = set_uv[division[r][k]]
-    #for k in range(len(division[0])):
-    #    division[0][k] = set_uv[division[0][k]]
-    #for k in range(len(division[1])):
-    #    division[1][k] = set_uv[division[1][k]]
+
 
 
     # Excludie the used depot virtual nodes (they are edges that were already visited)
     for r in range(R):
         division[r].pop(division[r].index(list_of_H[r].currEdge))
 
-
     print '\nAssigned edges for the robots:'
     for r in range(R):
-        print 'Subset for robot ' + str(r) + ': ', division[r]
+        #print 'Subset for robot ' + str(r) + ': ', division[r]
+        print 'Subset for robot ' + str(list_of_H[r].id) + ': ', division[r]
     print '\n'
     # ----------  ----------  ----------  ----------  ----------  ----------  ----------
 
@@ -248,10 +264,10 @@ def replanning(original_graph, virtual_graph, list_of_H):
 
         if e+1 in division[0]:
             pylab.subplot(2, 2, 1)
-            pylab.plot(x, y, colors[0], linewidth=4.0)
+            pylab.plot(x, y, colors[0], linewidth=3.0)
         if e+1 in division[1]:
             pylab.subplot(2, 2, 2)
-            pylab.plot(x, y, colors[1], linewidth=4.0)
+            pylab.plot(x, y, colors[1], linewidth=3.0)
     # ----------  ----------  ----------  ----------  ----------  ----------  ----------
 
 
@@ -272,7 +288,7 @@ def replanning(original_graph, virtual_graph, list_of_H):
     for r in range(R):
         subgraphs.append([])
         pylab.subplot(2,2,r+3)
-        subgraphs[r] = MST.MSTconnect(division[r], (list_of_H[r]).nextNode, colors[r])
+        subgraphs[r] = MST.MSTconnect(division[r], (list_of_H[r]).nextNode, colors[r], True)
     for r in range(R):
         print 'Subset of edges for robot ' + str(r) + ': (original indexes)\n', subgraphs[r]
         print 'Start node for robot ' + str(r) + ':', (list_of_H[r]).nextNode
@@ -329,6 +345,53 @@ def replanning(original_graph, virtual_graph, list_of_H):
     # ----------  ----------  ----------  ----------  ----------
 
 
+    #Create list T_a
+    pts_0 = virtual_graph['nodes']
+    T_a0 = [Intlist()]
+    for k in range(len(PolC[0])-1):
+        IL = Intlist()
+        T_a0.append(IL)
+    #print 'Here is T_a0'
+    #print T_a0
+    for k in range(len(pts_0)):
+        T_a0[k].data = list(list_of_H[0].T_a[0].data) + list(list_of_H[1].T_a[1].data)
+        T_a0[k].data = list(T_a0[k].data)
+        #print 'Edge: ', k + 1
+        if k + 1 in set_uv:  # if in unvisite list
+            if k + 1 in division[0]:  # if in the assigned to the other one
+                T_a0[k].data.append(list_of_H[0].id)
+                #print 'Added robot', list_of_H[0].id, 'to edge', k + 1
+            elif k + 1 in division[1]:
+                T_a0[k].data.append(list_of_H[1].id)
+                #print 'Added robot', list_of_H[1].id, 'to edge', k + 1
+        T_a0[k].data = list(set(T_a0[k].data))
+    #print 'Here is T_a0'
+    #print T_a0
+
+
+    #Create list T_f
+    """
+    T_f0 = [Intlist()]
+    for k in range(len(PolC[0])-1):
+        IL = Intlist()
+        T_f0.append(IL)
+    for k in range(len(pts_0)):
+        T_f0[k].data = list(list_of_H[0].T_f[0].data) + list(list_of_H[1].T_f[1].data)
+        T_f0[k].data = list(T_f0[k].data)
+        if k + 1 in set_v:  # if in unvisite list
+                T_a0[k].data.append(list_of_H[0].id)
+        T_a0[k].data = list(set(T_a0[k].data))
+    """
+    T_f0 = []
+    for k in range(len(list_of_H[0].T_f)):
+        T_f0.append(list_of_H[0].T_f[k])
+    for k in range(len(list_of_H[1].T_f)):
+        T_f0.append(list_of_H[1].T_f[k])
+    for k in range(len(set_v)):
+        T_f0.append(set_v[k])
+    T_f0 = list(set(T_f0))
+
+
 
 
     # Create the new list of histories (STILL MUST ADAPT TO A GENERAL NUMBER OF ROBOS)
@@ -340,38 +403,27 @@ def replanning(original_graph, virtual_graph, list_of_H):
         H.e_uv = division[r]
         for r2 in range(R):
             if r2!=r:
-                H.e_g = division[r2]
-        H.T_a = []
-        H.T_f = []
+                H.e_g = division[r2] + set_g
+        """
+        IL = Intlist()
+        H.T_a = [IL for i in range(len(PolC[0]))]
+        for k in range(len(pts_0)):
+            aux = list_of_H[0].T_a[0].data + list_of_H[1].T_a[1].data #list of robots assigned to edge k+1
+            if k+1 in set_uv: #if in unvisite list
+                if k+1 in division[-r+1]: #if in the assigned to the other one
+                    aux = list(aux) + [list_of_H[-r+1].id] #add the id of the other
+                    print 'Added robot', list_of_H[-r+1].id, 'to edge', k+1
+            aux = list(set(aux)) #exclude repetitions
+            H.T_a[k].data = aux #atribute to the T_a list of the robot
+        """
+        H.T_a = T_a0
+        #H.T_f = []
+        H.T_f = T_f0
         H.lastMeeting = []
         for r2 in range(R):
             H.lastMeeting.append(list_of_H[r2].id)
         new_Hists.append(H)
 
-    """  
-    # Create the new list of histories (STILL MUST ADAPT TO A GENERAL NUMBER OF ROBOS)
-    new_Hists = []
-    H = History()
-    H.id = 0
-    H.e_v = set_v
-    H.e_uv = division[0]
-    H.e_g = division[1]
-    H.T_a = []
-    H.T_f = []
-    H.lastMeeting = [0, 1] #AAAAAAAAAAA
-    new_Hists.append(H)
-
-    H = History()
-    H.id = 1
-    H.e_v = set_v
-    H.e_uv = division[1]
-    H.e_g = division[0]
-    H.T_a = []
-    H.T_f = []
-    H.lastMeeting = [0, 1] #AAAAAAAAAAA
-    new_Hists.append(H)
-    # ----------  ----------  ----------
-    """
 
 
 

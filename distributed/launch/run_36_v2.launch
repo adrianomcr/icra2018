@@ -22,6 +22,10 @@
 <node pkg = "distributed" name = "sensor_simulator" type = "sensor_simulator.py" output="screen">
 </node>
 
+<!--node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster_0" args="0 0 0 0 0 0 world robot_0/odom 10" /-->
+<!--node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster_1" args="0 0 0 0 0 0 world robot_1/odom 10" /-->
+<!--node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster_2" args="0 0 0 0 0 0 world robot_2/odom 10" /-->
+
 
 
 </launch>

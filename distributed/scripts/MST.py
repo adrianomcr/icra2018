@@ -17,7 +17,7 @@ import library2018 as myLib
 
 
 
-def MSTconnect(edgeset_all, robot_start_node, cor):
+def MSTconnect(edgeset_all, robot_start_node, cor, PLOT_IT):
 
     # edges_all -> list of edges that where assigned to the robot
     # robot_start -> node in which the robot starts
@@ -100,29 +100,30 @@ def MSTconnect(edgeset_all, robot_start_node, cor):
 
     #Plot the results of the MST based algorithm
     # ----------  ----------  ---------- ----------
-    pylab.axis('equal')
-    pylab.axis(w_s)
-    pylab.title('Final connected graph')
-    for e in range(len(PolC[0])):
+    if PLOT_IT:
+        pylab.axis('equal')
+        pylab.axis(w_s)
+        pylab.title('Final connected graph')
+        for e in range(len(PolC[0])):
 
-        [fr, to, cx, cy, cost] = myLib.getCoefs(e, PolC)
+            [fr, to, cx, cy, cost] = myLib.getCoefs(e, PolC)
 
-        p0 = [0.01 * k for k in range(101)]
-        x = []
-        y = []
-        for p in p0:
-            x.append(0)
-            y.append(0)
-            for k in range(6):  # Compute refference position
-                x[-1] = x[-1] + cx[6 - k - 1] * p ** k
-                y[-1] = y[-1] + cy[6 - k - 1] * p ** k
+            p0 = [0.01 * k for k in range(101)]
+            x = []
+            y = []
+            for p in p0:
+                x.append(0)
+                y.append(0)
+                for k in range(6):  # Compute refference position
+                    x[-1] = x[-1] + cx[6 - k - 1] * p ** k
+                    y[-1] = y[-1] + cy[6 - k - 1] * p ** k
 
-        if  e+1 in  final_list:
-            pylab.plot(x, y, cor, linewidth=4.0)
-        else:
-            pylab.plot(x, y, 'k--', linewidth=1.0)
-    # pylab.show()
-    # ----------  ----------  ---------- ----------
+            if  e+1 in  final_list:
+                pylab.plot(x, y, cor, linewidth=3.0)
+            else:
+                pylab.plot(x, y, 'k--', linewidth=1.0)
+        # pylab.show()
+        # ----------  ----------  ---------- ----------
 
 
 

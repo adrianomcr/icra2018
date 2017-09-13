@@ -24,6 +24,10 @@ global x_n2, y_n2, theta_n2
 x_n2 = 0.1  # posicao x atual do robo
 y_n2 = 0.2  # posicao y atual do robo
 theta_n2 = 0.001  # orientacao atual do robo
+global x_n3, y_n3, theta_n3
+x_n3 = 0.1  # posicao x atual do robo
+y_n3 = 0.2  # posicao y atual do robo
+theta_n3 = 0.001  # orientacao atual do robo
 
 
 
@@ -82,6 +86,23 @@ def callback_pose2(data):
 
     return
 # ----------  ----------  ----------  ----------  ----------
+def callback_pose3(data):
+    global x_n3, y_n3, theta_n3
+
+    x_n3 = data.pose.pose.position.x  # posicao 'x' do robo no mundo
+    y_n3 = data.pose.pose.position.y  # posicao 'y' do robo no mundo
+    x_q3 = data.pose.pose.orientation.x
+    y_q3 = data.pose.pose.orientation.y
+    z_q3 = data.pose.pose.orientation.z
+    w_q3 = data.pose.pose.orientation.w
+    euler3 = euler_from_quaternion([x_q3, y_q3, z_q3, w_q3])
+    theta_n3 = euler3[2]  # orientaco 'theta' do robo no mundo
+
+    br = tf.TransformBroadcaster()
+    br.sendTransform((x_n3, y_n3, 0), (x_q3, y_q3, z_q3, w_q3), rospy.Time.now(), "/robot_3/base_pose_ground_truth", "world")
+
+    return
+# ----------  ----------  ----------  ----------  ----------
 
 
 
@@ -125,6 +146,18 @@ def callback_laser2(data):
     return
 # ----------  ----------  ----------  ----------  ----------
 
+# Rotina callback para a obtencao dos dados do laser
+def callback_laser3(data):
+    global laserVec3
+    global x_n3, y_n3, theta_n3
+
+    laserVec2 = data.ranges
+
+    br = tf.TransformBroadcaster()
+    br.sendTransform((x_n3, y_n3, 0), quaternion_from_euler(0, 0, theta_n3), rospy.Time.now(), "/robot_3/base_laser_link","world")
+    return
+# ----------  ----------  ----------  ----------  ----------
+
 
 
 
@@ -138,6 +171,7 @@ def send_marker_to_rviz():
     global pub_pose
     global pub_pose1
     global pub_pose2
+    global pub_pose3
 
 
 
@@ -217,6 +251,32 @@ def send_marker_to_rviz():
 
     pub_pose2.publish(mark_pose2)
 
+    # ----------  ----------  ----------
+
+    mark_pose3 = Marker()
+    mark_pose3.header.frame_id = "world"
+    mark_pose3.header.stamp = rospy.Time.now()
+    mark_pose3.id = 0
+    mark_pose3.type = mark_pose3.CUBE
+    mark_pose3.action = mark_pose2.ADD
+    mark_pose3.scale.x = 0.22
+    mark_pose3.scale.y = 0.22
+    mark_pose3.scale.z = 0.06
+    mark_pose3.color.a = 1.0
+    mark_pose3.color.r = 1.0
+    mark_pose3.color.g = 1.0
+    mark_pose3.color.b = 0.0
+    mark_pose3.pose.position.x = x_n3
+    mark_pose3.pose.position.y = y_n3
+    mark_pose3.pose.position.z = 0.0
+    quaternio = quaternion_from_euler(0, 0, theta_n3)
+    mark_pose3.pose.orientation.x = quaternio[0]
+    mark_pose3.pose.orientation.y = quaternio[1]
+    mark_pose3.pose.orientation.z = quaternio[2]
+    mark_pose3.pose.orientation.w = quaternio[3]
+
+    pub_pose3.publish(mark_pose3)
+
     return
 
 # ----------  ----------  ----------  ----------  ----------
@@ -230,6 +290,8 @@ def send_comm_range_to_rviz(circ_x0,circ_y0):
 
     global x_n, y_n, theta_n
     global x_n1, y_n1, theta_n1
+    global x_n2, y_n2, theta_n2
+    global x_n3, y_n3, theta_n3
 
 
     points_marker = MarkerArray()
@@ -333,8 +395,41 @@ def send_comm_range_to_rviz(circ_x0,circ_y0):
 
 
 
+    points_marker = MarkerArray()
+    marker = Marker()
+    #for p0 in range(1, 628, 1):
+    for p in range(len(circ_x0)):
+        #print "p0 = ", p0
+        #p = p0 / 100.0
+        #x = cos(phi) * (a * cos(p)) - sin(phi) * (b * sin(p)) + cx * 1
+        #y = sin(phi) * (a * cos(p)) + cos(phi) * (b * sin(p)) + cy * 1
+        #x = circ_x0 + x_n3
+        #y = circ_y0 + y_n3
+        marker = Marker()
+        marker.header.frame_id = "/world"
+        marker.header.stamp = rospy.Time.now()
+        marker.id = p - 1
+        marker.type = marker.SPHERE
+        marker.action = marker.ADD
+        marker.scale.x = 0.05
+        marker.scale.y = 0.05
+        marker.scale.z = 0.05
+        marker.color.a = 1.0
+        marker.color.r = 1.0
+        marker.color.g = 1.0
+        marker.color.b = 0.0
+        marker.pose.orientation.w = 1.0
+        marker.pose.position.x = circ_x0[p] + x_n3
+        marker.pose.position.y = circ_y0[p] + y_n3
+        marker.pose.position.z = 0.1
+        #print "marker = ", marker
+        points_marker.markers.append(marker)
+    circle_yellow = points_marker
 
-    return circle_blue, circle_red, circle_green
+
+
+
+    return circle_blue, circle_red, circle_green, circle_yellow
 
 # ----------  ----------  ----------  ----------  ----------
 
@@ -346,7 +441,7 @@ def send_comm_range_to_rviz(circ_x0,circ_y0):
 # Rotina primaria
 def config():
     global x_n, y_n, theta_n
-    global pub_pose, pub_pose1, pub_pose2
+    global pub_pose, pub_pose1, pub_pose2, pub_pose3
     global freq
 
     vel = Twist()
@@ -363,16 +458,20 @@ def config():
     pub_pose = rospy.Publisher("/marker_pose", Marker, queue_size=1)
     pub_pose1 = rospy.Publisher("/marker_pose1", Marker, queue_size=1)
     pub_pose2 = rospy.Publisher("/marker_pose2", Marker, queue_size=1)
+    pub_pose3 = rospy.Publisher("/marker_pose3", Marker, queue_size=1)
     pub_circ0 = rospy.Publisher("/marker_circ0", MarkerArray, queue_size=1)
     pub_circ1 = rospy.Publisher("/marker_circ1", MarkerArray, queue_size=1)
     pub_circ2 = rospy.Publisher("/marker_circ2", MarkerArray, queue_size=1)
+    pub_circ3 = rospy.Publisher("/marker_circ3", MarkerArray, queue_size=1)
     rospy.init_node("config")
     rospy.Subscriber("/robot_0/base_pose_ground_truth", Odometry, callback_pose)
     rospy.Subscriber("/robot_1/base_pose_ground_truth", Odometry, callback_pose1)
     rospy.Subscriber("/robot_2/base_pose_ground_truth", Odometry, callback_pose2)
+    rospy.Subscriber("/robot_3/base_pose_ground_truth", Odometry, callback_pose3)
     rospy.Subscriber("/robot_0/base_scan", LaserScan, callback_laser)
     rospy.Subscriber("/robot_1/base_scan", LaserScan, callback_laser1)
     rospy.Subscriber("/robot_2/base_scan", LaserScan, callback_laser2)
+    rospy.Subscriber("/robot_3/base_scan", LaserScan, callback_laser3)
 
 
 
@@ -400,11 +499,12 @@ def config():
 
         send_marker_to_rviz()
 
-        [circle_blue, circle_red, circle_green] = send_comm_range_to_rviz(circ_x0,circ_y0)
+        [circle_blue, circle_red, circle_green, circle_yellow] = send_comm_range_to_rviz(circ_x0,circ_y0)
 
         pub_circ0.publish(circle_blue)
         pub_circ1.publish(circle_red)
         pub_circ2.publish(circle_green)
+        pub_circ3.publish(circle_yellow)
 
         rate.sleep()
 

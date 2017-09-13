@@ -5,6 +5,8 @@ import numpy as np
 import time
 #from pylab import *
 import pylab
+#import sys
+#sys.path.insert(0, '/usr/lib/lp_solve/')
 from lpsolve55 import *
 from lp_maker import *
 import rospkg

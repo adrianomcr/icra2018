@@ -10,6 +10,13 @@ from lp_maker import *
 import rospkg
 import scipy.io
 
+import sys
+rp = rospkg.RosPack()
+path = rp.get_path('distributed')
+path = path + '/CPP'
+sys.path.insert(0, path)
+import cppsolver
+import MST
 
 
 
@@ -313,6 +320,23 @@ def repulsive_potential(laserVec, pose, ux, uy):
 # ----------  ----------  ----------  ----------  ----------
 
 
+# When a robot ends its taks it pops all edges to attempt to find the object
+def pop_all_edges(H):
+
+
+    #Select edges
+
+    #Transform to nodes
+
+    #Run MST
+
+    #Run CPP
+
+
+    return
+# ----------  ----------  ----------  ----------  ----------
+
+
 
 def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, original_graph, freq, pose, laserVec, d, Vd, Kp, id, edge):
 
@@ -322,6 +346,7 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
     EdgeMap = original_graph['EdgeMap']
 
     end_flag = False
+    pop_all_edges_flag = False
     change_edge = False #Indicated a change on edge - useful to force robots to finish a edge before replanning
 
     if time - time_start > T + 1 / freq:
@@ -349,8 +374,35 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
     if new_path == 1:
         if len(H['e_uv']) == 0:
             VX, WZ = 0, 0
-            end_flag = True
-            return H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, VX, WZ, end_flag, edge, change_edge
+            #end_flag = True
+            pop_all_edges_flag = True
+
+            print '\n\n----------\nPOPPING ALL NODES\n----------\nA'
+            for kk in range(40):
+                H['e_uv'].append(kk+1)
+            H['e_v'] = []
+            H['e_g'] = []
+            #print "Here is H['e_uv']"
+            #print H['e_uv']
+            curr_node, lixo = get_current_node(original_graph,pose)
+            #print 'Here is curr_node', curr_node
+            connected_subgraph = MST.MSTconnect(H['e_uv'], curr_node, 'k', False)
+            #print 'Here is connected_subgraph', connected_subgraph
+            edges_listOfTuples = write_listOfTuples(original_graph, connected_subgraph)
+            Hole_path = cppsolver.CPP(sorted(edges_listOfTuples), curr_node)
+            #print 'Here is Hole path'
+            print Hole_path
+            pathNode = [Hole_path[0],Hole_path[1]]
+            #print 'A\nA\nA\nAAAAAAAAAAAAAAAAAAAAAAAA'
+            #QUE LOCURA
+            i = Hole_path.pop(0)
+            j = Hole_path[0]
+            pathNode = getNodePath(i - 1, j - 1, PathM)
+            new_task = 0
+            new_path = 1
+            # QUE LOCURA
+            #keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path,original_graph, freq, pose, laserVec, d, Vd, Kp, id, edge)
+            #return H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, VX, WZ, end_flag, edge, change_edge
         i = pathNode.pop(0)
         j = pathNode[0]
         T = C[i - 1][j - 1] / Vd
@@ -368,9 +420,16 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
         # Remove the edge from the list of unvisited nodes
         if edge in H['e_uv']:
             H['e_uv'].pop(H['e_uv'].index(edge))
-        # Add the edge to the list of visited edges
-        if not edge in H['e_v']:
-            H['e_v'].append(edge)
+            # Add the edge to the list of visited edges
+            if not edge in H['e_v']:
+                H['e_v'].append(edge)
+                rp = rospkg.RosPack()
+                path = rp.get_path('distributed')
+                path = path + '/text/visited_' + str(id) + '.txt'
+                FILE = open(path, 'a')
+                FILE.write(str(edge)+'\n')
+                FILE.close()
+
         # Ad the edge in the forbidden edges
 
         print '\nRobot ' + str(id)
@@ -378,7 +437,9 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
         #print 'Edge = ', EdgeMap[i - 1][j - 1]
         print 'e_v:\n', H['e_v']
         print 'e_uv:\n', H['e_uv']
+        print 'e_g:\n', H['e_g']
         print 'Whole_path:\n', Hole_path
+        print 'pathNode:\n', pathNode
 
 
 

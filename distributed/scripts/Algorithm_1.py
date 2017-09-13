@@ -157,6 +157,17 @@ def callback_new_plan(data):
 
         print '\n     ----- New plan received -----'
 
+        print "Here is H['e_v']"
+        print H['e_v']
+        print "Here is H['e_uv']"
+        print H['e_uv']
+        print "Here is H['e_g']"
+        print H['e_g']
+        print "Here is H['T_a']"
+        print H['T_a']
+        print "Here is H['T_f']"
+        print H['T_f']
+
         replan_tasks = False
         waitting_new_plan = False
         new_task = 1
@@ -402,10 +413,10 @@ if __name__ == '__main__':
 
     #Define the characteristics of the robot given its ID
     # set robot searching speed
-    Vs = [pi / 2, pi / 2, pi / 4] #search speeds (rad/s)
-    Vd = [0.4, 0.55, 0.7] #moving speeds (m/s)
-    Vs = Vs[id]
-    Vd = Vd[id]
+    Vs = [pi / 2, pi / 2, pi / 3, pi / 2] #search speeds (rad/s)
+    Vd = [0.4, 0.55, 0.5, 0.4] #moving speeds (m/s)
+    Vs = Vs[id]/1.2
+    Vd = Vd[id]/1.2
 
 
     #Open txt files to write results of positions and velocities
@@ -430,16 +441,27 @@ if __name__ == '__main__':
     e_v = [] # visited
     e_uv = range(1,len(PolC[0])+1) # unvisited (must be visited)
     e_g = [] # assigned to other robots
-    T_a = [[] for i in range(len(PolC[0]))] # list of list of robots assigned to an edge
-    T_f = [[] for i in range(len(PolC[0]))] # list of list of robots forbidden to visit an edge
+    IL = Intlist()
+    T_a = [IL for i in range(len(PolC[0]))] # list of list of robots assigned to an edge
+    #T_f = [IL for i in range(len(PolC[0]))] # list of list of robots forbidden to visit an edge
+    T_f = []  # list of list of robots forbidden to visit an edge
     lastMeeting = [] #list of who was in the communicatio graph in the last meeting
     H = {'id': id, 'specs': [Vd, Vs], 'e_v': e_v, 'e_uv': e_uv, 'e_g': e_g, 'T_a': T_a, 'T_f': T_f, 'lastMeeting': lastMeeting}
+
 
     # Read the virtual graph
     virtual_graph = myLib.read_graph('Virtual_graph_36.mat')
 
     # Read search point set
     SP = myLib.ReadSearchPoints("Map_36_SP.txt")
+
+
+    #Clear File
+    rp = rospkg.RosPack()
+    path = rp.get_path('distributed')
+    path = path + '/text/visited_' + str(id) + '.txt'
+    FILE = open(path, 'w')
+    FILE.close()
 
     # Start running Algorithm 1
     try:
