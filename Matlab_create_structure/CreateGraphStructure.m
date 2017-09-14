@@ -93,7 +93,7 @@ E_pol = zeros(length(MeetPoints));
 
 
 %Loop to generate a set of polynomials that represents each edge
-for k = 1:1:length(Path_l)
+0
     i = Path_l(k).from;
     j = Path_l(k).To;
     x = Path_l(k).path;

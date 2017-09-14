@@ -377,20 +377,22 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
             #end_flag = True
             pop_all_edges_flag = True
 
-            print '\n\n----------\nPOPPING ALL NODES\n----------\nA'
+            print '\n\n----------  ----------  ----------\nPOPPING ALL NODES\n----------  ----------  ----------\n\n'
             for kk in range(40):
-                H['e_uv'].append(kk+1)
+                #H['e_uv'].append(kk+1)
+                if not (kk+1 in H['T_f']):
+                    H['e_uv'].append(kk + 1)
             H['e_v'] = []
             H['e_g'] = []
-            #print "Here is H['e_uv']"
-            #print H['e_uv']
+            print "Here is H['e_uv']"
+            print H['e_uv']
             curr_node, lixo = get_current_node(original_graph,pose)
-            #print 'Here is curr_node', curr_node
+            print 'Here is curr_node', curr_node
             connected_subgraph = MST.MSTconnect(H['e_uv'], curr_node, 'k', False)
             #print 'Here is connected_subgraph', connected_subgraph
             edges_listOfTuples = write_listOfTuples(original_graph, connected_subgraph)
             Hole_path = cppsolver.CPP(sorted(edges_listOfTuples), curr_node)
-            #print 'Here is Hole path'
+            print 'Here is Hole path'
             print Hole_path
             pathNode = [Hole_path[0],Hole_path[1]]
             #print 'A\nA\nA\nAAAAAAAAAAAAAAAAAAAAAAAA'
@@ -456,19 +458,20 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
 
 
 
-def CheckOnSP(pos,SP,Threshold):
+def CheckOnSP(pos,SP,SP_fix,Threshold):
     posn=np.array([pos[0],pos[1]])
     d1=(posn-SP)**2
     d=np.sqrt(d1[:,0]+d1[:,1])
     for i in range(0,len(SP)):
         #print (d[i])
         if (d[i]<float(Threshold)):
+            SP_id = SP_fix.tolist().index(SP[i,0:2].tolist()) + 1
             SPnew=np.delete(SP[:,0:2],i,0)
-            return SPnew,1
-    return SP,0
+            return SPnew,1,SP_id
+    return SP,0,-1 #No search point close
 # ----------  ----------  ----------  ----------  ----------
 
-def  ReadSearchPoints(name):
+def ReadSearchPoints(name):
     rp = rospkg.RosPack()
     path = rp.get_path('distributed')
     path = path + '/maps/' + name

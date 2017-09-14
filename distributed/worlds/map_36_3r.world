@@ -96,9 +96,107 @@ floorplan
 )
 
 # throw in a robot
-#erratic( pose [ 1.200 1.200 0.000 89.610 ] name "robot_0" color "blue")
-#erratic( pose [ 6.0000    7.3800 0.000 89.610 ] name "robot_0" color "blue") #node 9
-erratic( pose [ 0.4800   10.4200 0.000 1.496 ] name "robot_0" color "blue") #node 1
-erratic( pose [ 11.4000    0.4600 0.000 115.050 ] name "robot_1" color "red") #node 30
-erratic( pose [ 0.4755    0.4883 0.000 -20.050 ] name "robot_2" color "green") #node 33
-#block( pose [ -13.000 18.000 0.000 180.000 ] name "my_goal" color "red")
+#erratic( pose [ 0.4800   10.4200 0.000 1.496 ] name "robot_0" color "blue") #node 1
+#erratic( pose [ 11.4000    0.4600 0.000 115.050 ] name "robot_1" color "red") #node 30
+#erratic( pose [ 0.4755    0.4883 0.000 -20.050 ] name "robot_2" color "green") #node 33
+
+
+#Set 1
+#erratic( pose [8.560 5.620 0 0] name "robot_0" color "blue") # node 23
+#erratic( pose [2.420 5.560 0 0] name "robot_1" color "red") # node 13
+#erratic( pose [0.480 0.460 0 0] name "robot_2" color "green") # node 33
+
+#Set 2
+#erratic( pose [8.520 5.660 0 0] name "robot_0" color "blue") # node 7
+#erratic( pose [2.120 2.560 0 0] name "robot_1" color "red") # node 19
+#erratic( pose [1.260 9.620 0 0] name "robot_2" color "green") # node 2
+
+#Set 3
+#erratic( pose [6.320 6.100 0 0] name "robot_0" color "blue") # node 8
+#erratic( pose [9.940 8.400 0 0] name "robot_1" color "red") # node 26
+#erratic( pose [2.120 2.560 0 0] name "robot_2" color "green") # node 19
+
+#Set 4
+#erratic( pose [6.880 2.840 0 0] name "robot_0" color "blue") # node 21
+#erratic( pose [6.020 7.380 0 0] name "robot_1" color "red") # node 9
+#erratic( pose [11.400 9.100 0 0] name "robot_2" color "green") # node 6
+
+#Set 5
+#erratic( pose [9.260 2.540 0 0] name "robot_0" color "blue") # node 31
+#erratic( pose [3.300 7.160 0 0] name "robot_1" color "red") # node 10
+#erratic( pose [9.940 8.400 0 0] name "robot_2" color "green") # node 26
+
+#Set 6
+#erratic( pose [8.560 5.620 0 0] name "robot_0" color "blue") # node 23
+#erratic( pose [10.420 1.440 0 0] name "robot_1" color "red") # node 28
+#erratic( pose [0.480 10.420 0 0] name "robot_2" color "green") # node 1
+
+#Set 7
+#erratic( pose [4.580 1.380 0 0] name "robot_0" color "blue") # node 16
+#erratic( pose [2.080 8.360 0 0] name "robot_1" color "red") # node 11
+#erratic( pose [7.000 8.360 0 0] name "robot_2" color "green") # node 35
+
+#Set 8
+#erratic( pose [8.560 5.620 0 0] name "robot_0" color "blue") # node 23
+#erratic( pose [2.420 5.560 0 0] name "robot_1" color "red") # node 13
+#erratic( pose [11.400 10.420 0 0] name "robot_2" color "green") # node 5
+
+#Set 9
+#erratic( pose [8.520 5.660 0 0] name "robot_0" color "blue") # node 7
+#erratic( pose [2.120 2.560 0 0] name "robot_1" color "red") # node 19
+#erratic( pose [1.260 9.620 0 0] name "robot_2" color "green") # node 2
+
+#Set 10
+#erratic( pose [4.420 3.260 0 0] name "robot_0" color "blue") # node 17
+#erratic( pose [11.400 0.460 0 0] name "robot_1" color "red") # node 30
+#erratic( pose [7.000 8.360 0 0] name "robot_2" color "green") # node 35
+
+#Set 11
+#erratic( pose [8.560 5.620 0 0] name "robot_0" color "blue") # node 23
+#erratic( pose [0.480 0.460 0 0] name "robot_1" color "red") # node 33
+#erratic( pose [10.760 9.760 0 0] name "robot_2" color "green") # node 4
+
+#Set 12
+#erratic( pose [4.420 3.260 0 0] name "robot_0" color "blue") # node 17
+#erratic( pose [9.940 8.400 0 0] name "robot_1" color "red") # node 26
+#erratic( pose [1.400 5.580 0 0] name "robot_2" color "green") # node 14
+
+#Set 13
+#erratic( pose [8.560 5.620 0 0] name "robot_0" color "blue") # node 23
+#erratic( pose [2.120 2.560 0 0] name "robot_1" color "red") # node 19
+#erratic( pose [3.300 7.160 0 0] name "robot_2" color "green") # node 10
+
+#Set 14
+#erratic( pose [5.240 5.020 0 0] name "robot_0" color "blue") # node 36
+#erratic( pose [1.280 1.280 0 0] name "robot_1" color "red") # node 15
+#erratic( pose [0.480 10.420 0 0] name "robot_2" color "green") # node 1
+
+#Set 15
+#erratic( pose [9.260 2.540 0 0] name "robot_0" color "blue") # node 31
+#erratic( pose [2.420 5.560 0 0] name "robot_1" color "red") # node 13
+#erratic( pose [8.480 9.300 0 0] name "robot_2" color "green") # node 3
+
+#Set 16
+#erratic( pose [8.460 3.340 0 0] name "robot_0" color "blue") # node 22
+#erratic( pose [10.760 9.760 0 0] name "robot_1" color "red") # node 4
+#erratic( pose [2.120 2.560 0 0] name "robot_2" color "green") # node 19
+
+#Set 17
+#erratic( pose [6.980 1.280 0 0] name "robot_0" color "blue") # node 29
+#erratic( pose [8.480 9.300 0 0] name "robot_1" color "red") # node 3
+#erratic( pose [10.200 5.620 0 0] name "robot_2" color "green") # node 24
+
+#Set 18
+#erratic( pose [6.980 1.280 0 0] name "robot_0" color "blue") # node 29
+#erratic( pose [9.940 8.400 0 0] name "robot_1" color "red") # node 26
+#erratic( pose [1.400 5.580 0 0] name "robot_2" color "green") # node 14
+
+#Set 19
+#erratic( pose [6.980 1.280 0 0] name "robot_0" color "blue") # node 29
+#erratic( pose [10.760 9.760 0 0] name "robot_1" color "red") # node 4
+#erratic( pose [2.420 5.560 0 0] name "robot_2" color "green") # node 13
+
+#Set 20
+erratic( pose [8.460 3.340 0 0] name "robot_0" color "blue") # node 22
+erratic( pose [3.220 6.320 0 0] name "robot_1" color "red") # node 12
+erratic( pose [11.400 0.460 0 0] name "robot_2" color "green") # node 30

@@ -15,6 +15,8 @@ import tf
 import scipy.io
 import rospkg
 
+import copy
+
 
 
 
@@ -219,6 +221,7 @@ def send_message_recompute_close(pub_comm_graph, ids):
 
     global H_0, H_1, H_2, H_3, HL
     global meeting_matrix
+    ids = [ids[0], ids[1]]
 
     if ids == [0,1]:
         H_A = H_0
@@ -239,8 +242,8 @@ def send_message_recompute_close(pub_comm_graph, ids):
         H_A = H_2
         H_B = H_3
 
-
-
+    print "H_A['lastMeeting'] = ", H_A['lastMeeting']
+    print "H_B['lastMeeting'] = ", H_B['lastMeeting']
 
     #if (H_0['lastMeeting'] != H_1['lastMeeting'] or H_0['lastMeeting'] == []):  # Check if there is new information
     if (H_A['lastMeeting'] != H_B['lastMeeting'] or H_A['lastMeeting'] == []):  # Check if there is new information
@@ -261,7 +264,9 @@ def send_message_recompute_close(pub_comm_graph, ids):
         H.currEdge = H_A['currEdge']
         H.nextNode = H_A['nextNode']
         H.pose = H_A['pose']
-        H.lastMeeting = H_A['lastMeeting']
+        #H.lastMeeting = H_A['lastMeeting']
+        H.lastMeeting = copy.deepcopy(ids)
+        print "H.lastMeeting = ids", H.lastMeeting
         HL.robList.append(H_A['id'])
         # HL.velocityList.append(0.4)
         HL.listOfH.append(H)
@@ -278,7 +283,9 @@ def send_message_recompute_close(pub_comm_graph, ids):
         H.currEdge = H_B['currEdge']
         H.nextNode = H_B['nextNode']
         H.pose = H_B['pose']
-        H.lastMeeting = H_B['lastMeeting']
+        #H.lastMeeting = H_B['lastMeeting']
+        H.lastMeeting = copy.deepcopy(ids)
+        print "H.lastMeeting = ids", H.lastMeeting
         HL.robList.append(H_B['id'])
         # HL.velocityList.append(0.55)
         HL.listOfH.append(H)
@@ -410,19 +417,19 @@ def sensor_simulator():
         """
         if mutex0 > 0 and time - mutex0 > 20:
             mutex0 = -1
-            print 'Mutex0 = -1', time
+            #print 'Mutex0 = -1', time
 
         if mutex1 > 0 and time - mutex1 > 20:
             mutex1 = -1
-            print 'Mutex1 = -1', time
+            #print 'Mutex1 = -1', time
 
         if mutex2 > 0 and time - mutex2 > 20:
             mutex2 = -1
-            print 'Mutex2 = -1', time
+            #print 'Mutex2 = -1', time
 
         if mutex3 > 0 and time - mutex3 > 20:
             mutex3 = -1
-            print 'Mutex3 = -1', time
+            #print 'Mutex3 = -1', time
 
 
 

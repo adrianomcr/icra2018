@@ -9,6 +9,8 @@ Panels:
         - /Axes1
         - /LaserScan1
         - /Marker1
+        - /MarkerArray1
+        - /Axes2
       Splitter Ratio: 0.494186
     Tree Height: 719
   - Class: rviz/Selection
@@ -29,7 +31,7 @@ Panels:
     Experimental: true
     Name: Time
     SyncMode: 0
-    SyncSource: LaserScan
+    SyncSource: ""
 Visualization Manager:
   Class: ""
   Displays:
@@ -104,6 +106,21 @@ Visualization Manager:
       Namespaces:
         "": true
       Queue Size: 100
+      Value: true
+    - Class: rviz/MarkerArray
+      Enabled: true
+      Marker Topic: /marker_circ0
+      Name: MarkerArray
+      Namespaces:
+        "": true
+      Queue Size: 100
+      Value: true
+    - Class: rviz/Axes
+      Enabled: true
+      Length: 0.4
+      Name: Axes
+      Radius: 0.04
+      Reference Frame: robot_0/base_pose_ground_truth
       Value: true
   Enabled: true
   Global Options:

@@ -37,7 +37,7 @@ if __name__ == '__main__':
 	string_cmd = "gnome-terminal -x bash -c 'rosrun distributed Algorithm_1.py 2'"
 	os.system(string_cmd)
 
-    if R >= 4;
+    if R >= 4:
 	string_cmd = "gnome-terminal -x bash -c 'rosrun distributed Algorithm_1.py 3'"
 	os.system(string_cmd)
 

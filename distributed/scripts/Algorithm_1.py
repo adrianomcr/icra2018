@@ -131,7 +131,7 @@ def callback_new_plan(data):
 
 
     global Hole_path
-    global id, H
+    global id, H, H_new
     global replan_tasks
     global waitting_new_plan
     global new_task
@@ -148,15 +148,25 @@ def callback_new_plan(data):
 
         Hmsg = data.listOfH[position]
 
+        """
         H['e_v'] = list(Hmsg.e_v)
         H['e_uv'] = list(Hmsg.e_uv)
         H['e_g'] = list(Hmsg.e_g)
         H['T_a'] = list(Hmsg.T_a)
         H['T_f'] = list(Hmsg.T_f)
         H['lastMeeting'] = list(Hmsg.lastMeeting)
+        """
+        H_new['e_v'] = list(Hmsg.e_v)
+        H_new['e_uv'] = list(Hmsg.e_uv)
+        H_new['e_g'] = list(Hmsg.e_g)
+        H_new['T_a'] = list(Hmsg.T_a)
+        H_new['T_f'] = list(Hmsg.T_f)
+        H_new['lastMeeting'] = list(Hmsg.lastMeeting)
+
 
         print '\n     ----- New plan received -----'
 
+        """
         print "Here is H['e_v']"
         print H['e_v']
         print "Here is H['e_uv']"
@@ -167,9 +177,28 @@ def callback_new_plan(data):
         print H['T_a']
         print "Here is H['T_f']"
         print H['T_f']
+        """
+
+        #"""
+        global finish_edge
+        if finish_edge:
+            H = H_new
+            waitting_new_plan = False
+        else:
+            new_plan_flag = True
+
+        #"""
+
+
 
         replan_tasks = False
+        """
+        if waitting_new_plan:
+            H = H_new
+        else:
+            new_plan_flag = True
         waitting_new_plan = False
+        """
         new_task = 1
 
     return
@@ -194,13 +223,16 @@ def Algorithm_1():
     global laserVec
     global id
     global replan_tasks, finish_edge
-    global H
+    global H, H_new
     global list_of_H, list_of_robs, list_of_vels
     global Hole_path
     global waitting_new_plan
     global new_task
     global original_graph
-    global SP
+    global SP, SP_fix
+    global new_plan_flag
+
+    new_plan_flag = False
 
     vel = Twist()
 
@@ -222,6 +254,9 @@ def Algorithm_1():
     #Read/Write in the topic of new plan
     pub_broadcast = rospy.Publisher('/new_path_topic', Broadcast, queue_size=4) #Eventually publish new routes to other robots
     rospy.Subscriber('/new_path_topic',Broadcast,callback_new_plan) #Eventually receive a new route
+
+    #Publish the searched point in order to
+    pub_SP = rospy.Publisher('/searched_point', Intlist, queue_size=4)
 
     freq = 10.0  # Frequency of operation in Hz
     rate = rospy.Rate(freq)
@@ -248,6 +283,8 @@ def Algorithm_1():
     elif (id == 2):
         Hole_path = []
         Hole_path = [33, 15, 16, 29, 21, 22, 31, 11]
+    elif (id == 3):
+        Hole_path = []
     """
 
 
@@ -280,6 +317,10 @@ def Algorithm_1():
                         print '\nEdge finished\n'
                         vel.linear.x, vel.angular.z = 0, 0
                         pub_stage.publish(vel)
+                        if new_plan_flag:
+                            H = H_new
+                            new_plan_flag = False
+                            waitting_new_plan = False
                 else:
                     # When the edge is finished check the ID to see if the current robot has munimum index
                     if (id == min(list_of_robs)):
@@ -320,6 +361,7 @@ def Algorithm_1():
 
                     else:
 
+
                         VX, WZ = 0, 0
                         vel.linear.x, vel.angular.z = 0, 0
                         pub_stage.publish(vel)
@@ -338,18 +380,23 @@ def Algorithm_1():
             # if robot is on its unvisited edges
 
             Threshold = 0.20  # if the distance of robot is less than threshold
-            [SP, closeFlag] = myLib.CheckOnSP(pose[0:2], SP, Threshold)
+            [SP, closeFlag, SP_id] = myLib.CheckOnSP(pose[0:2], SP, SP_fix, Threshold)
 
-            if (closeFlag and edge == (H['e_v'])[-1]):
-                print 'Robot searching in a search point ...'
-                cnt = 0
+            if(len(H['e_v']) > 0):
+                if (closeFlag and edge == (H['e_v'])[-1]):
+                    print 'Here is SP_id:', SP_id
+                    print 'Robot searching in a search point ...'
+                    cnt = 0
 
-                while (cnt < 2 * pi):  # robot rotates and search based on its Searching Speed
-                    # Publish the computed speed to stage
-                    rate.sleep()
-                    vel.linear.x, vel.angular.z = 0, Vs
-                    pub_stage.publish(vel)
-                    cnt = cnt + (1 / freq) * Vs
+                    while (cnt < 2 * pi):  # robot rotates and search based on its Searching Speed
+                        # Publish the computed speed to stage
+                        rate.sleep()
+                        vel.linear.x, vel.angular.z = 0, Vs
+                        pub_stage.publish(vel)
+                        cnt = cnt + (1 / freq) * Vs
+                    IL = Intlist()
+                    IL.data = [SP_id, id]
+                    pub_SP.publish(IL)
 
 
 
@@ -413,10 +460,10 @@ if __name__ == '__main__':
 
     #Define the characteristics of the robot given its ID
     # set robot searching speed
-    Vs = [pi / 2, pi / 2, pi / 3, pi / 2] #search speeds (rad/s)
+    Vs = [pi / 1.5, pi / 2, pi / 3, pi / 2] #search speeds (rad/s)
     Vd = [0.4, 0.55, 0.5, 0.4] #moving speeds (m/s)
-    Vs = Vs[id]/1.2
-    Vd = Vd[id]/1.2
+    Vs = Vs[id]/1.1
+    Vd = Vd[id]/1.1
 
 
     #Open txt files to write results of positions and velocities
@@ -447,6 +494,7 @@ if __name__ == '__main__':
     T_f = []  # list of list of robots forbidden to visit an edge
     lastMeeting = [] #list of who was in the communicatio graph in the last meeting
     H = {'id': id, 'specs': [Vd, Vs], 'e_v': e_v, 'e_uv': e_uv, 'e_g': e_g, 'T_a': T_a, 'T_f': T_f, 'lastMeeting': lastMeeting}
+    H_new = {'id': id, 'specs': [Vd, Vs], 'e_v': e_v, 'e_uv': e_uv, 'e_g': e_g, 'T_a': T_a, 'T_f': T_f, 'lastMeeting': lastMeeting}
 
 
     # Read the virtual graph
@@ -454,6 +502,7 @@ if __name__ == '__main__':
 
     # Read search point set
     SP = myLib.ReadSearchPoints("Map_36_SP.txt")
+    SP_fix = myLib.ReadSearchPoints("Map_36_SP.txt")
 
 
     #Clear File
