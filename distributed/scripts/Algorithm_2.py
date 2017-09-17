@@ -9,6 +9,7 @@ import scipy.io
 import rospkg
 import sys
 import pylab
+import copy
 
 
 rp = rospkg.RosPack()
@@ -48,12 +49,16 @@ def define_subsets(list_of_H,virtual_graph):
     #H0 = list_of_H[0] #History of robot 0
     #H1 = list_of_H[1] #History of robot 1
 
+
+
+
+
     set_uv = []
     set_v = []
     set_g = []
     pts = []
     for k in range(len(pts_0)): #loop over all of the orignal edges
-        if k+1 == H0.currEdge or k+1 == H1.currEdge: #Add the current edges in the unvisited set
+        if k+1 == H0.currEdge or k+1 == H1.currEdge: #Add the current edges in the unvisited set (THEY SHOULD BE REMOVED NEXT)
             set_uv.append(k + 1)
             pts.append(pts_0[k])
         elif (k+1 in H0.e_v or k+1 in H1.e_v or k+1 in H0.T_f or k+1 in H1.T_f): #Forgot about th visited edges (we are done with them)
@@ -61,7 +66,7 @@ def define_subsets(list_of_H,virtual_graph):
         #elif((k+1 in H0.e_g and (not k+1 in H1.e_uv)) or (k+1 in H1.e_g and (not k+1 in H0.e_uv))): #If the edge is assigned to other robot -> forget it
         elif ((k + 1 in H0.e_g ) or (k + 1 in H1.e_g)):  # If the edge is assigned to other robot -> forget it
             if (not(H0.id in H0.T_a[k].data or H0.id in H1.T_a[k].data or H1.id in H0.T_a[k].data or H1.id in H1.T_a[k].data)):
-                print '-> Add to e_g: ', k+1
+                #print '-> Add to e_g: ', k+1
                 set_g.append(k + 1)
             else:
                 set_uv.append(k + 1)
@@ -91,7 +96,7 @@ def replanning(original_graph, virtual_graph, list_of_H):
     #print 'Here is list_of_H'
     #print list_of_H
 
-
+    PolC = original_graph['PolC']
 
     colors_0 = ['b', 'r', 'g', 'y']
 
@@ -110,7 +115,7 @@ def replanning(original_graph, virtual_graph, list_of_H):
         exec ('colors.append(colors_0[H%d.id])' % r)
 
 
-
+    old_cost = myLib.get_cost(original_graph,H0,H1, H0.specs[0], H1.specs[0], H0.specs[1], H1.specs[1])
 
 
 
@@ -208,67 +213,27 @@ def replanning(original_graph, virtual_graph, list_of_H):
 
 
     #Map the nodes back to the original indexation
-    #print 'Here is set_uv'
-    #print set_uv
-    #print 'Here is division'
-    #print division
     for r in range(R):
         for k in range(len(division[r])):
-            #print r, k
             division[r][k] = set_uv[division[r][k]]
 
 
 
-    # Excludie the used depot virtual nodes (they are edges that were already visited)
+    # Exclude the used depot virtual nodes (they are edges that were already visited)
     for r in range(R):
         division[r].pop(division[r].index(list_of_H[r].currEdge))
+    # Include the used depot virtual nodes in the visited set
+    for r in range(R):
+        set_v.append(list_of_H[r].currEdge)
 
     print '\nAssigned edges for the robots:'
     for r in range(R):
-        #print 'Subset for robot ' + str(r) + ': ', division[r]
         print 'Subset for robot ' + str(list_of_H[r].id) + ': ', division[r]
     print '\n'
     # ----------  ----------  ----------  ----------  ----------  ----------  ----------
 
 
-    #Plot the disconnected graph
-    # ----------  ----------  ----------  ----------  ----------  ----------  ----------
-    PolC = original_graph['PolC']
-    pylab.figure(100)
-    pylab.subplot(2, 2, 1)
-    pylab.axis('equal')
-    pylab.axis(virtual_graph['w_s'])
-    pylab.title('Disconnected graph')
-    pylab.subplot(2, 2, 2)
-    pylab.axis('equal')
-    pylab.axis(virtual_graph['w_s'])
-    pylab.title('Disconnected graph')
-    for e in range(len(PolC[0])):
 
-        [fr, to, cx, cy, cost] = myLib.getCoefs(e, PolC)
-
-        p0 = [0.01 * k for k in range(101)]
-        x = []
-        y = []
-        for p in p0:
-            x.append(0)
-            y.append(0)
-            for k in range(6):  # Compute refference position
-                x[-1] = x[-1] + cx[6 - k - 1] * p ** k
-                y[-1] = y[-1] + cy[6 - k - 1] * p ** k
-
-        pylab.subplot(2, 2, 1)
-        pylab.plot(x, y, 'k--', linewidth=1.0)
-        pylab.subplot(2, 2, 2)
-        pylab.plot(x, y, 'k--', linewidth=1.0)
-
-        if e+1 in division[0]:
-            pylab.subplot(2, 2, 1)
-            pylab.plot(x, y, colors[0], linewidth=3.0)
-        if e+1 in division[1]:
-            pylab.subplot(2, 2, 2)
-            pylab.plot(x, y, colors[1], linewidth=3.0)
-    # ----------  ----------  ----------  ----------  ----------  ----------  ----------
 
 
 
@@ -287,6 +252,7 @@ def replanning(original_graph, virtual_graph, list_of_H):
     subgraphs = []
     for r in range(R):
         subgraphs.append([])
+        pylab.figure(100)
         pylab.subplot(2,2,r+3)
         subgraphs[r] = MST.MSTconnect(division[r], (list_of_H[r]).nextNode, colors[r], True)
     for r in range(R):
@@ -295,37 +261,9 @@ def replanning(original_graph, virtual_graph, list_of_H):
     # ----------  ----------  ----------  ----------  ----------
 
 
-    # Save the result of TA and MST in a image
-    import time
-    hour = time.strftime("%Hh%Mm%Ss")
-    date = time.strftime("d%dm%my%Y")
-    rp = rospkg.RosPack()
-    fig_name = rp.get_path('distributed')
-    fig_name = fig_name + '/imagesResults/Results_' + date + '_' + hour + '.png'
-    pylab.savefig(fig_name)
-    # ----------  ----------  ----------  ----------  ----------
 
 
 
-    #Plotting the heuristic costs
-    # ----------  ----------  ----------  ----------  ----------  ----------  ----------
-    for i in range(len(pts)):
-
-        x = pts[i][0]
-        y = pts[i][1]
-
-        pylab.subplot(2, 2, 1)
-        pylab.text(x, y, ("%.2f" % C_check0[i]), fontsize=8.0)
-        pylab.subplot(2, 2, 2)
-        pylab.text(x, y, ("%.2f" % C_check1[i]), fontsize=8.0)
-    # ----------  ----------  ----------  ----------  ----------  ----------  ----------
-
-
-    # Choose if the result of the planning will be platted or not
-    SHOW_NEW_PLAN = False
-    #SHOW_NEW_PLAN = True
-    if SHOW_NEW_PLAN:
-        pylab.show()
 
 
 
@@ -351,37 +289,18 @@ def replanning(original_graph, virtual_graph, list_of_H):
     for k in range(len(PolC[0])-1):
         IL = Intlist()
         T_a0.append(IL)
-    #print 'Here is T_a0'
-    #print T_a0
     for k in range(len(pts_0)):
         T_a0[k].data = list(list_of_H[0].T_a[0].data) + list(list_of_H[1].T_a[1].data)
         T_a0[k].data = list(T_a0[k].data)
-        #print 'Edge: ', k + 1
         if k + 1 in set_uv:  # if in unvisite list
             if k + 1 in division[0]:  # if in the assigned to the other one
                 T_a0[k].data.append(list_of_H[0].id)
-                #print 'Added robot', list_of_H[0].id, 'to edge', k + 1
             elif k + 1 in division[1]:
                 T_a0[k].data.append(list_of_H[1].id)
-                #print 'Added robot', list_of_H[1].id, 'to edge', k + 1
         T_a0[k].data = list(set(T_a0[k].data))
-    #print 'Here is T_a0'
-    #print T_a0
 
 
     #Create list T_f
-    """
-    T_f0 = [Intlist()]
-    for k in range(len(PolC[0])-1):
-        IL = Intlist()
-        T_f0.append(IL)
-    for k in range(len(pts_0)):
-        T_f0[k].data = list(list_of_H[0].T_f[0].data) + list(list_of_H[1].T_f[1].data)
-        T_f0[k].data = list(T_f0[k].data)
-        if k + 1 in set_v:  # if in unvisite list
-                T_a0[k].data.append(list_of_H[0].id)
-        T_a0[k].data = list(set(T_a0[k].data))
-    """
     T_f0 = []
     for k in range(len(list_of_H[0].T_f)):
         T_f0.append(list_of_H[0].T_f[k])
@@ -404,25 +323,24 @@ def replanning(original_graph, virtual_graph, list_of_H):
         for r2 in range(R):
             if r2!=r:
                 H.e_g = division[r2] + set_g
-        """
-        IL = Intlist()
-        H.T_a = [IL for i in range(len(PolC[0]))]
-        for k in range(len(pts_0)):
-            aux = list_of_H[0].T_a[0].data + list_of_H[1].T_a[1].data #list of robots assigned to edge k+1
-            if k+1 in set_uv: #if in unvisite list
-                if k+1 in division[-r+1]: #if in the assigned to the other one
-                    aux = list(aux) + [list_of_H[-r+1].id] #add the id of the other
-                    print 'Added robot', list_of_H[-r+1].id, 'to edge', k+1
-            aux = list(set(aux)) #exclude repetitions
-            H.T_a[k].data = aux #atribute to the T_a list of the robot
-        """
         H.T_a = T_a0
-        #H.T_f = []
         H.T_f = T_f0
         H.lastMeeting = []
         for r2 in range(R):
             H.lastMeeting.append(list_of_H[r2].id)
+        H.Whole_path = Hole_path_list[r]
         new_Hists.append(H)
+
+    #new_cost = myLib.get_cost(Hole_path_list[0], Hole_path_list[1])
+    new_cost = myLib.get_cost(original_graph,new_Hists[0], new_Hists[1], H0.specs[0], H1.specs[0], H0.specs[1], H1.specs[1])
+
+
+
+
+
+    print 'Here is old cost: ', old_cost
+    print 'Here is new cost: ', new_cost
+
 
 
 
@@ -432,22 +350,158 @@ def replanning(original_graph, virtual_graph, list_of_H):
 
 
     # Check if the new plan is better than the previous one
+    change_plan = False
+    if new_cost < old_cost:
+        change_plan = True
+        # Plot the disconnected graph
+        # ----------  ----------  ----------  ----------  ----------  ----------  ----------
+        pylab.figure(100)
+        pylab.subplot(2, 2, 1)
+        pylab.axis('equal')
+        pylab.axis(virtual_graph['w_s'])
+        pylab.title('Disconnected graph')
+        pylab.subplot(2, 2, 2)
+        pylab.axis('equal')
+        pylab.axis(virtual_graph['w_s'])
+        pylab.title('Disconnected graph')
+        for e in range(len(PolC[0])):
 
-    #CHECK STUFF HERE   !!!!!!!!!!  !!!!!!!!!!  !!!!!!!!!!
-    #if something:
-    #    change_plan = True
+            [fr, to, cx, cy, cost] = myLib.getCoefs(e, PolC)
 
+            p0 = [0.01 * k for k in range(101)]
+            x = []
+            y = []
+            for p in p0:
+                x.append(0)
+                y.append(0)
+                for k in range(6):  # Compute refference position
+                    x[-1] = x[-1] + cx[6 - k - 1] * p ** k
+                    y[-1] = y[-1] + cy[6 - k - 1] * p ** k
+
+            pylab.subplot(2, 2, 1)
+            pylab.plot(x, y, 'k--', linewidth=1.0)
+            pylab.subplot(2, 2, 2)
+            pylab.plot(x, y, 'k--', linewidth=1.0)
+
+            if e + 1 in division[0]:
+                pylab.subplot(2, 2, 1)
+                pylab.plot(x, y, colors[0], linewidth=3.0)
+            if e + 1 in division[1]:
+                pylab.subplot(2, 2, 2)
+                pylab.plot(x, y, colors[1], linewidth=3.0)
+                # ----------  ----------  ----------  ----------  ----------  ----------  ----------
+        """
+        # Plotting the heuristic costs
+        # ----------  ----------  ----------  ----------  ----------  ----------  ----------
+        for i in range(len(pts)):
+            x = pts[i][0]
+            y = pts[i][1]
+
+            pylab.subplot(2, 2, 1)
+            pylab.text(x, y, ("%.2f" % C_check0[i]), fontsize=8.0)
+            pylab.subplot(2, 2, 2)
+            pylab.text(x, y, ("%.2f" % C_check1[i]), fontsize=8.0)
+        # ----------  ----------  ----------  ----------  ---------  ----------  ----------
+        """
+    if not change_plan:
+
+        print 'Nw cost is not better ...'
+
+        print '----------  ----------  ----------  ----------  ---------- ----------  ----------  ----------'
+        print '----------  ---------- ---------- APPLYING THE SIMPLE REPLAN ---------- ----------  ----------'
+        print '----------  ----------  ----------  ----------  ---------- ----------  ----------  ----------'
+        #OBS: This simple new plan is necessary.
+        #If the new plan from MILP->MST->CPP is not better ok. However, we need to run CPP again because we have
+
+        division = [[],[]]
+        for k in H0.e_uv:
+            print 'k in H0.e_uv', k
+            if k in set_uv:
+                division[0].append(k)
+        print '\n'
+        for k in H1.e_uv:
+            print 'k in H1.e_uv', k
+            if k in set_uv:
+                division[1].append(k)
+
+        print 'Here is new division (for the simple replan)'
+        print division
+
+
+        #Simple replan ----------  ----------  ----------
+
+        # Call MST for every robot in the communication graph in order to make the graph connected
+        pylab.close()
+        pylab.figure(100)
+        #pylab.subplot(2, 2, 1)
+        #pylab.axis('equal')
+        pylab.axis(virtual_graph['w_s'])
+        print '\n ----- Applying MST to the disconnected subgraphs ------'
+        subgraphs = []
+        for r in range(R):
+            subgraphs.append([])
+            pylab.subplot(2, 2, r + 3)
+            print 'Here is new division (for the simple replan)'
+            print division
+            subgraphs[r] = MST.MSTconnect(division[r], (list_of_H[r]).nextNode, colors[r], True)
+        for r in range(R):
+            print 'Subset of edges for robot ' + str(list_of_H[r].id) + ': (original indexes)\n', subgraphs[r]
+            print 'Start node for robot ' + str(list_of_H[r].id) + ':', (list_of_H[r]).nextNode
+        # ----------  ----------  ----------  ----------  ----------
+        # Cal CPP for every graph generated by the MST based algorithm
+        print '\nApplying CPP to the connected subgraphs'
+        Hole_path_list = []
+        for r in range(R):
+            Hole_path_list.append([])
+            current_node = (list_of_H[r]).nextNode
+            edges_listOfTuples = myLib.write_listOfTuples(original_graph, subgraphs[r])
+            Hole_path_list[r] = cppsolver.CPP(sorted(edges_listOfTuples), current_node)
+        for r in range(R):
+            print 'Route for robot ' + str(list_of_H[r].id), ': ', Hole_path_list[r]
+        print '\n'
+        # ----------  ----------  ----------  ----------  ----------
+
+
+
+        # Create the new list of histories (STILL MUST ADAPT TO A GENERAL NUMBER OF ROBOS)
+        new_Hists = []
+        for r in range(R):
+            H = History()
+            H.id = list_of_H[r].id
+            H.e_v = set_v
+            H.e_uv = division[r]
+            for r2 in range(R):
+                if r2 != r:
+                    H.e_g = division[r2] + set_g
+            H.T_a = T_a0
+            H.T_f = T_f0
+            H.lastMeeting = []
+            for r2 in range(R):
+                H.lastMeeting.append(list_of_H[r2].id)
+            H.Whole_path = Hole_path_list[r]
+            new_Hists.append(H)
     # ----------  ----------  ----------  ----------  ----------
 
 
+    # Save the result of TA and MST in a image
+    import time
+    hour = time.strftime("%Hh%Mm%Ss")
+    date = time.strftime("d%dm%my%Y")
+    rp = rospkg.RosPack()
+    fig_name = rp.get_path('distributed')
+    fig_name = fig_name + '/imagesResults/Results_' + date + '_' + hour + '.png'
+    pylab.savefig(fig_name)
+    # ----------  ----------  ----------  ----------  ----------
+
+    # Choose if the result of the planning will be platted or not
+    SHOW_NEW_PLAN = False
+    #SHOW_NEW_PLAN = True
+    if SHOW_NEW_PLAN:
+        pylab.show()
 
 
 
 
-
-
-
-    #return the new plans
     return change_plan, Hole_path_list, new_Hists
 # ----------  ----------  ----------  ----------  ----------
 

@@ -380,7 +380,12 @@ def config():
     rate = rospy.Rate(freq)
 
     p = [2*pi*i/50.0 for i in range(50)]
+    #R = 0.5
+    #R = 1.5
     R = 2.5
+    #R = 3.5
+    #R = 4.5
+
     #circ_x0 = np.matrix([R*cos(i) for i in p])
     #circ_y0 = np.matrix([R*sin(i) for i in p])
     circ_x0 = [R*cos(i) for i in p]

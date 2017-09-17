@@ -18,6 +18,7 @@ import pylab
 import rospkg
 import sys
 import os
+import copy
 
 rp = rospkg.RosPack()
 path = rp.get_path('distributed')
@@ -50,7 +51,7 @@ replan_tasks = False
 #Lists that carries the history of the robot
 global e_v, e_uv, e_g
 global T_a, T_f
-global H
+global H, H_new
 
 # Callback routine to obtain the robot's pose
 def callback_pose(data):
@@ -131,11 +132,12 @@ def callback_new_plan(data):
 
 
     global Hole_path
-    global id, H, H_new
+    global id, H, H_new, Hole_path_new
     global replan_tasks
     global waitting_new_plan
     global new_task
     global pose, original_graph
+    global new_plan_flag
 
 
     #If the current robot is one of the ones the replanning rout is destinated to
@@ -143,8 +145,8 @@ def callback_new_plan(data):
 
         position = data.destinations.index(id)
 
-        #Hole_path = list(data.new_Hole_paths[id].data)
-        Hole_path = list(data.new_Hole_paths[position].data)
+        #Hole_path = list(data.new_Hole_paths[position].data)
+        Hole_path_new = list(data.new_Hole_paths[position].data)
 
         Hmsg = data.listOfH[position]
 
@@ -162,6 +164,7 @@ def callback_new_plan(data):
         H_new['T_a'] = list(Hmsg.T_a)
         H_new['T_f'] = list(Hmsg.T_f)
         H_new['lastMeeting'] = list(Hmsg.lastMeeting)
+        #H_new['lastMeeting'] = list(Hmsg.lastMeeting)
 
 
         print '\n     ----- New plan received -----'
@@ -179,19 +182,26 @@ def callback_new_plan(data):
         print H['T_f']
         """
 
-        #"""
+        """
         global finish_edge
         if finish_edge:
-            H = H_new
+            H = copy.deepcopy(H_new)
+            Hole_path = copy.deepcopy(Hole_path_new)
+            print '\nNew H inside callback\n'
             waitting_new_plan = False
+            replan_tasks = False
         else:
             new_plan_flag = True
+            print '\nFlag setted\n'
+            #waitting_new_plan = True
 
-        #"""
+        """
+        new_plan_flag = True
+        print '\nFlag setted\n'
 
 
 
-        replan_tasks = False
+        #replan_tasks = False
         """
         if waitting_new_plan:
             H = H_new
@@ -199,7 +209,7 @@ def callback_new_plan(data):
             new_plan_flag = True
         waitting_new_plan = False
         """
-        new_task = 1
+        #new_task = 1
 
     return
 # ----------  ----------  ----------  ----------  ----------
@@ -223,7 +233,7 @@ def Algorithm_1():
     global laserVec
     global id
     global replan_tasks, finish_edge
-    global H, H_new
+    global H, H_new, Hole_path_new
     global list_of_H, list_of_robs, list_of_vels
     global Hole_path
     global waitting_new_plan
@@ -284,7 +294,7 @@ def Algorithm_1():
         Hole_path = []
         Hole_path = [33, 15, 16, 29, 21, 22, 31, 11]
     elif (id == 3):
-        Hole_path = []
+        Hole_path = [5, 4, 3, 2, 1,14, 15]
     """
 
 
@@ -294,6 +304,7 @@ def Algorithm_1():
     pathNode, cx, cy, p, signal, new_task, new_path = [],[],[],[],[],[],[]
     edge = -1
     waitting_new_plan = False
+    finish_edge = False
 
 
     #Main loop
@@ -302,6 +313,7 @@ def Algorithm_1():
         count = count + 1 #counter
 
         time = count / float(freq) #variable that counts time
+        #print time
 
 
         if not waitting_new_plan:
@@ -317,10 +329,15 @@ def Algorithm_1():
                         print '\nEdge finished\n'
                         vel.linear.x, vel.angular.z = 0, 0
                         pub_stage.publish(vel)
+                        """
                         if new_plan_flag:
-                            H = H_new
+                            H = copy.deepcopy(H_new)
+                            Hole_path = copy.deepcopy(Hole_path_new)
+                            print '\nNew H inside if flag\n'
+                            replan_tasks = False
                             new_plan_flag = False
                             waitting_new_plan = False
+                        """
                 else:
                     # When the edge is finished check the ID to see if the current robot has munimum index
                     if (id == min(list_of_robs)):
@@ -342,17 +359,10 @@ def Algorithm_1():
                         B.destinations = []
                         for r in range(R):
                             B.destinations.append(new_Hists[r].id)
-                        #B.destinations = [0,1]
                         for r in range(R):
                             IL = Intlist()
                             IL.data = list(Hole_path_list[r])
                             B.new_Hole_paths.append(IL)
-                        #IL = Intlist()
-                        #IL.data = list(Hole_path_list[0])
-                        #B.new_Hole_paths.append(IL)
-                        #IL = Intlist()
-                        #IL.data = list(Hole_path_list[1])
-                        #B.new_Hole_paths.append(IL)
                         B.listOfH = new_Hists
 
                         print 'New plan broadcasted'
@@ -365,7 +375,7 @@ def Algorithm_1():
                         VX, WZ = 0, 0
                         vel.linear.x, vel.angular.z = 0, 0
                         pub_stage.publish(vel)
-                        waitting_new_plan = True
+                        #waitting_new_plan = True
 
             if end_flag:
                 # Terminate the execution
@@ -375,17 +385,15 @@ def Algorithm_1():
 
             # ----------------------------------------
 
-            # Check if the robot is on the search point
-            # if ...
-            # if robot is on its unvisited edges
-
             Threshold = 0.20  # if the distance of robot is less than threshold
-            [SP, closeFlag, SP_id] = myLib.CheckOnSP(pose[0:2], SP, SP_fix, Threshold)
+            [SP, closeFlag, SP_id, SP_edge] = myLib.CheckOnSP(pose[0:2], SP, SP_fix, Threshold)
 
             if(len(H['e_v']) > 0):
                 if (closeFlag and edge == (H['e_v'])[-1]):
-                    print 'Here is SP_id:', SP_id
-                    print 'Robot searching in a search point ...'
+                #if (closeFlag and SP_edge == (H['e_v'])[-1]):
+                    #print 'Here is SP_id:', SP_id
+                    print 'Robot searching in a search point', str(SP_id), '...'
+                    print 'SP_edge = ', SP_edge
                     cnt = 0
 
                     while (cnt < 2 * pi):  # robot rotates and search based on its Searching Speed
@@ -416,6 +424,7 @@ def Algorithm_1():
             #Publish the History to the centralized communication simulator in order to keep it actualized
             Hmsg = History()
             Hmsg.id, Hmsg.specs, Hmsg.e_v, Hmsg.e_uv, Hmsg.e_g, Hmsg.T_a, Hmsg.T_f, Hmsg.currEdge, Hmsg.nextNode, Hmsg.pose, Hmsg.lastMeeting = id, [Vd, Vs], H['e_v'], H['e_uv'], H['e_g'], H['T_a'], H['T_f'], edge, pathNode[0], pose, H['lastMeeting']
+            Hmsg.Whole_path = Hole_path
             pub_hist.publish(Hmsg)
 
             #Wait
@@ -424,6 +433,37 @@ def Algorithm_1():
         else:
             #If the robot is waitting for a new plan just wait (waitting_new_plan == True)
             rate.sleep()
+            print 'Waitting'
+
+
+        #print '                                   ', new_plan_flag, change_edge,new_plan_flag and change_edge
+        if(new_plan_flag and change_edge):
+            new_plan_flag = False
+            #change_edge = False
+            H = copy.deepcopy(H_new)
+            Hole_path = copy.deepcopy(Hole_path_new)
+            #print "AAAAAAAAAAAAAAAAAAAAAA"
+            #print "AAAAAAAAAAAAAAAAAAAAAA"
+            #print "AAAAAAAAAAAAAAAAAAAAAA"
+            #print "AAAAAAAAAAAAAAAAAAAAAA"
+            #print "AAAAAAAAAAAAAAAAAAAAAA"
+            #print "AAAAAAAAAAAAAAAAAAAAAA"
+            #print "AAAAAAAAAAAAAAAAAAAAAA"
+            waitting_new_plan = False
+            replan_tasks = False
+            new_task = 1
+
+        """
+        print 'finish_edge = ', finish_edge
+        if(new_plan_flag and finish_edge):
+            print 'H assigned inside the if new_plan_flag and finish_edge'
+            H = copy.deepcopy(H_new)
+            replan_tasks = False
+            Hole_path = copy.deepcopy(Hole_path_new)
+            new_plan_flag = False
+            finish_edge = False
+            waitting_new_plan = False
+        """
 
 
 
@@ -493,10 +533,18 @@ if __name__ == '__main__':
     #T_f = [IL for i in range(len(PolC[0]))] # list of list of robots forbidden to visit an edge
     T_f = []  # list of list of robots forbidden to visit an edge
     lastMeeting = [] #list of who was in the communicatio graph in the last meeting
-    H = {'id': id, 'specs': [Vd, Vs], 'e_v': e_v, 'e_uv': e_uv, 'e_g': e_g, 'T_a': T_a, 'T_f': T_f, 'lastMeeting': lastMeeting}
-    H_new = {'id': id, 'specs': [Vd, Vs], 'e_v': e_v, 'e_uv': e_uv, 'e_g': e_g, 'T_a': T_a, 'T_f': T_f, 'lastMeeting': lastMeeting}
+    H = {'id': id, 'specs': [Vd, Vs], 'e_v': e_v, 'e_uv': e_uv, 'e_g': e_g, 'T_a': T_a, 'T_f': T_f, 'lastMeeting': lastMeeting, 'Whole_path': []}
+    H_new = {'id': id, 'specs': [Vd, Vs], 'e_v': e_v, 'e_uv': e_uv, 'e_g': e_g, 'T_a': T_a, 'T_f': T_f, 'lastMeeting': lastMeeting, 'Whole_path': []}
 
-
+    """
+    print '\n\n'
+    H['id'] = 10
+    print "Here is H['id']", H['id']
+    print "Here is H_new['id']", H_new['id']
+    print '\n\n'
+    x = a +C +V
+    """
+    
     # Read the virtual graph
     virtual_graph = myLib.read_graph('Virtual_graph_36.mat')
 

@@ -9,6 +9,7 @@ from lpsolve55 import *
 from lp_maker import *
 import rospkg
 import scipy.io
+import copy
 
 import sys
 rp = rospkg.RosPack()
@@ -380,31 +381,28 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
             print '\n\n----------  ----------  ----------\nPOPPING ALL NODES\n----------  ----------  ----------\n\n'
             for kk in range(40):
                 #H['e_uv'].append(kk+1)
-                if not (kk+1 in H['T_f']):
+                #if not (kk+1 in H['T_f']):
+                if not (kk + 1 in H['e_v']):
                     H['e_uv'].append(kk + 1)
-            H['e_v'] = []
+            #H['e_v'] = []
             H['e_g'] = []
             print "Here is H['e_uv']"
             print H['e_uv']
+            print 'Here is pose', pose
             curr_node, lixo = get_current_node(original_graph,pose)
+            curr_node = curr_node+1
             print 'Here is curr_node', curr_node
             connected_subgraph = MST.MSTconnect(H['e_uv'], curr_node, 'k', False)
-            #print 'Here is connected_subgraph', connected_subgraph
             edges_listOfTuples = write_listOfTuples(original_graph, connected_subgraph)
             Hole_path = cppsolver.CPP(sorted(edges_listOfTuples), curr_node)
             print 'Here is Hole path'
             print Hole_path
             pathNode = [Hole_path[0],Hole_path[1]]
-            #print 'A\nA\nA\nAAAAAAAAAAAAAAAAAAAAAAAA'
-            #QUE LOCURA
             i = Hole_path.pop(0)
             j = Hole_path[0]
             pathNode = getNodePath(i - 1, j - 1, PathM)
             new_task = 0
             new_path = 1
-            # QUE LOCURA
-            #keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path,original_graph, freq, pose, laserVec, d, Vd, Kp, id, edge)
-            #return H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, new_task, new_path, VX, WZ, end_flag, edge, change_edge
         i = pathNode.pop(0)
         j = pathNode[0]
         T = C[i - 1][j - 1] / Vd
@@ -435,13 +433,11 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
         # Ad the edge in the forbidden edges
 
         print '\nRobot ' + str(id)
-        #print 'Moving from i =', i, 'to', 'j =', j
-        #print 'Edge = ', EdgeMap[i - 1][j - 1]
         print 'e_v:\n', H['e_v']
         print 'e_uv:\n', H['e_uv']
         print 'e_g:\n', H['e_g']
         print 'Whole_path:\n', Hole_path
-        print 'pathNode:\n', pathNode
+        #print 'pathNode:\n', pathNode
 
 
 
@@ -459,16 +455,23 @@ def keep_moving(H, time, time_start, T, pathNode, Hole_path, cx, cy, p, signal, 
 
 
 def CheckOnSP(pos,SP,SP_fix,Threshold):
-    posn=np.array([pos[0],pos[1]])
-    d1=(posn-SP)**2
+
+    posn = np.array([pos[0], pos[1]])
+    d1 = (posn - SP[:,0:2]) ** 2
     d=np.sqrt(d1[:,0]+d1[:,1])
-    for i in range(0,len(SP)):
+    for i in range(0,len(SP[:,0])):
         #print (d[i])
         if (d[i]<float(Threshold)):
-            SP_id = SP_fix.tolist().index(SP[i,0:2].tolist()) + 1
-            SPnew=np.delete(SP[:,0:2],i,0)
-            return SPnew,1,SP_id
-    return SP,0,-1 #No search point close
+            SP_id = SP_fix[:,0:2].tolist().index(SP[i,0:2].tolist()) + 1
+            SP_edge = int(SP[i,2:3])
+            SPnew = np.delete(SP[:, 0:3], i, 0)
+            return SPnew,1,SP_id,SP_edge
+    """
+    SP_id = -1
+    for k in range(len(SP_fix)):
+        if(SPnew == SP_fix):
+    """
+    return SP,0,-1,-1 #No search point close
 # ----------  ----------  ----------  ----------  ----------
 
 def ReadSearchPoints(name):
@@ -476,7 +479,6 @@ def ReadSearchPoints(name):
     path = rp.get_path('distributed')
     path = path + '/maps/' + name
     SPfile=open(path,"r")
-    #SP=SPfile.readlines()
     '''mat = scipy.io.loadmat(path)
     g = mat['graph']
     n = g['number_nodes']
@@ -485,4 +487,39 @@ def ReadSearchPoints(name):
     line_list=SPfile.readlines()
     SP=[[float(val) for val in line.split()] for line in line_list[0:] ]
     SP1=np.array(SP)
+
+
     return SP1
+
+
+
+def get_cost(graph,H1, H2, v1, v2, vs1, vs2):
+
+    HP1 = H1.Whole_path
+    HP2 = H2.Whole_path
+
+
+
+    Ccom = graph['Ccom']
+
+    c1 = 0
+    c2 = 0
+    for k in range(len(HP1)-1):
+        c1 = c1 + Ccom[HP1[k]-1][HP1[k+1]-1]/v1 #Length cost
+    for k in range(len(HP2)-1):
+        c2 = c2 + Ccom[HP2[k]-1][HP2[k+1]-1]/v2 #Length cost
+
+    SP_0 = ReadSearchPoints("Map_36_SP.txt")
+    for k in range(77):
+        if SP_0[k,2] in H1.e_uv:
+            c1 = c1 + 2*pi/vs1 #Search cost
+        if SP_0[k,2] in H2.e_uv:
+            c2 = c2 + 2*pi/vs2 #Search cost
+
+
+    C = max(c1,c2)
+
+
+    return C
+
+

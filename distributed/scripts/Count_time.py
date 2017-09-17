@@ -57,14 +57,31 @@ def callback_SP(data):
     FILE = open(path_SP, 'a')
     FILE.write(str(new_data[0]) + ' ' + str(new_data[1]) + ' ' + str(new_data[2]) + '\n')
     FILE.close()
+    print 'len(SP_LIST) = ', len(SP_LIST)
 
+    """
+    #Choose this to terminate when a given search point is achieved
     if(new_data[0] == id_SP_target):
         print '\n\n----------  ----------  ----------  ----------  ----------  ----------'
-        print 'Robot', str(new_data[1]), 'foud the target in search point', str(new_data[0]), 'at time', str(new_data[2]), '\n'
+        print 'Robot', str(new_data[1]), 'foud the target in search point', str(new_data[0]), 'at time', str(new_data[2])
         print '----------  ----------  ----------  ----------  ----------  ----------\n\n'
         sleep(0.5)
         string_cmd = "gnome-terminal -x bash -c 'killall python'"
         os.system(string_cmd)
+    """
+
+    global SP_LIST
+
+    #"""
+    #Choose this to terminate when all search points are achieved
+    if new_data[0] in  SP_LIST:
+        rm_id = SP_LIST.index(new_data[0])
+        SP_LIST.pop(rm_id)
+        if len(SP_LIST) <= 5:
+            print '\n\n----------  ----------  ----------  ----------  ----------  ----------'
+            print 'Task finished in', str(tempo), 'seconds'
+            print '----------  ----------  ----------  ----------  ----------  ----------\n\n'
+    #"""
 
 
     return
@@ -107,7 +124,10 @@ def Time_counter():
     freq = 10.0  # Frequency of operation in Hz
     rate = rospy.Rate(freq)
 
+    global SP_LIST
+    SP_LIST = [k + 1 for k in range(76)]
 
+    print '\nHere is initial SP_LIST', SP_LIST, '\n'
 
     #Main loop
     while not rospy.is_shutdown():

@@ -49,6 +49,9 @@ def MSTconnect(edgeset_all, robot_start_node, cor, PLOT_IT):
     #Sort the nodes acording to their indexes
     nodeset_all = sorted(nodeset_all)
 
+    print 'Here is nodeset_all - INSIDE MST'
+    print nodeset_all
+
 
 
     # Obtain a subgraph that contains only the selected nodes

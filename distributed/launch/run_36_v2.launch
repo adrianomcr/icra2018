@@ -30,7 +30,7 @@
 
 
 <!--SPS = [41 69 6 16 50 25 8 44 34 55 51 74 43 24 57 13 18 17 31 71] -->
-<node pkg = "distributed" name = "time_couter" type = "Count_time.py" args="45" output="screen">
+<node pkg = "distributed" name = "time_couter" type = "Count_time.py" args="44" output="screen">
 </node>
 
 <!--node pkg="tf" type="static_transform_publisher" name="base_to_laser_broadcaster_0" args="0 0 0 0 0 0 world robot_0/odom 10" /-->

@@ -13,3 +13,4 @@ int16   currEdge
 int16   nextNode
 float32[]   pose
 int16[] lastMeeting
+int16[] Whole_path

@@ -151,12 +151,14 @@ def write_results_to_file(*args, **kwargs):
 
 
 #def execute_lp():
+SCALE_MODE = 1
 
-n = 12 #number of nodes
+n = 18 #number of nodes
 m = n * (n - 1) #number of edges
 R = 2 #number of robots
-depots = {0: [0],
-          1: [0, 1],
+depots = {0: [4],
+          #1: [0, 1],
+          1: [4, 9],  #running on terminal
           2: [0, 1, 6],
           3: [0, 1, 2, 3],
           }
@@ -245,7 +247,10 @@ p40 = [1.91, 1.18]
 pts = []
 for k in range(n):
     pts.append(eval('p%d' % (k + 1)))
+for k in range(len(pts)):
+    pts[k][0] = pts[k][0]*2
 pts = np.array(pts)
+
 # ----------  ----------  ----------
 
 
@@ -534,7 +539,7 @@ print '\nbF = ', bF
 
 
 #Joining all inequality constraints ----------  ----------  ----------
-Aineq = [];
+Aineq = []
 for line in Asub:
     Aineq.append(line)
 for line in AF:
@@ -597,7 +602,7 @@ int_var = range(1, R*m + 1, 1)
 # ----------  ----------  ----------
 
 # Auto scale flag
-scalemode = 1
+scalemode = SCALE_MODE
 # ----------  ----------  ----------
 
 # Definition of cost function operand (min or max)
@@ -677,17 +682,24 @@ else:
 
 #Plotting results  ----------  ----------  ----------
 w_s = [-3, 3, -2, 2]
+w_s = [-6, 6, -2, 2]
 pylab.axis('equal')
 pylab.axis(w_s)
 for k in range(n):
-    pylab.plot(pts[k][0], pts[k][1], 'bo', linewidth=2.0)
-    pylab.plot(pts[k][0], pts[k][1], 'b*', linewidth=2.0)
-    pylab.text(pts[k][0]+0.04,pts[k][1]+0.04,k+1,fontsize=20.0)
-
+    #pylab.plot(pts[k][0], pts[k][1], 'bo', linewidth=2.0)
+    #pylab.plot(pts[k][0], pts[k][1], 'b*', linewidth=2.0)
+    if k == 6:
+        pylab.plot(pts[k][0], pts[k][1], 'k.', markersize=28.0)
+        pylab.text(pts[k][0] + 0.08, pts[k][1] + 0.04, k + 1, fontsize=25.0)
+    else:
+        pylab.plot(pts[k][0], pts[k][1], 'k.', markersize=28.0)
+        pylab.text(pts[k][0]+0.06,pts[k][1]+0.06,k+1,fontsize=25.0)
+#"""
 for i in range(n):
     for j in range(n):
         if(i != j):
-            pylab.plot([pts[i][0],pts[j][0]], [pts[i][1],pts[j][1]],'b--',linewidth=0.5)
+            pylab.plot([pts[i][0], pts[j][0]], [pts[i][1], pts[j][1]], 'k', linewidth=0.4)
+#"""
 
 for r in range(R):
     k = -1
@@ -696,7 +708,14 @@ for r in range(R):
             if (i != j):
                 k = k + 1
                 if (abs(x[r * m + k] - 1) < 10 ** (-6)):
-                    pylab.plot([pts[i][0],pts[j][0]], [pts[i][1],pts[j][1]],colors[r],linewidth=3.0)
+                    pylab.plot([pts[i][0],pts[j][0]], [pts[i][1],pts[j][1]],colors[r],linewidth=5.0)
+
+
+qx = np.array([5.32, -5.02, -5.02, 5.32, 5.32])*1.1
+qy = np.array([1.88, 1.88, -1.6, -1.6, 1.88])*1.1
+qx = qx.tolist()
+qy = qy.tolist()
+pylab.plot(qx, qy,'k',linewidth=3.0)
 
 
 

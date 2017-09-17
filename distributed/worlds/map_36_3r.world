@@ -96,9 +96,9 @@ floorplan
 )
 
 # throw in a robot
-#erratic( pose [ 0.4800   10.4200 0.000 1.496 ] name "robot_0" color "blue") #node 1
-#erratic( pose [ 11.4000    0.4600 0.000 115.050 ] name "robot_1" color "red") #node 30
-#erratic( pose [ 0.4755    0.4883 0.000 -20.050 ] name "robot_2" color "green") #node 33
+erratic( pose [ 0.4800   10.4200 0.000 1.496 ] name "robot_0" color "blue") #node 1
+erratic( pose [ 11.4000    0.4600 0.000 115.050 ] name "robot_1" color "red") #node 30
+erratic( pose [ 0.4755    0.4883 0.000 -20.050 ] name "robot_2" color "green") #node 33
 
 
 #Set 1
@@ -197,6 +197,6 @@ floorplan
 #erratic( pose [2.420 5.560 0 0] name "robot_2" color "green") # node 13
 
 #Set 20
-erratic( pose [8.460 3.340 0 0] name "robot_0" color "blue") # node 22
-erratic( pose [3.220 6.320 0 0] name "robot_1" color "red") # node 12
-erratic( pose [11.400 0.460 0 0] name "robot_2" color "green") # node 30
+#erratic( pose [8.460 3.340 0 0] name "robot_0" color "blue") # node 22
+#erratic( pose [3.220 6.320 0 0] name "robot_1" color "red") # node 12
+#erratic( pose [11.400 0.460 0 0] name "robot_2" color "green") # node 30

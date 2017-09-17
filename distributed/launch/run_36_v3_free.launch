@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+
+<launch>
+
+
+<node pkg = "stage_ros" name = "stageros" type = "stageros" output = "screen" args="-d $(find distributed)/worlds/map_36_4r.world">
+</node>
+
+<node pkg = "rviz" name = "rviz" type = "rviz" args="-d $(find distributed)/rviz/rviz_config_4r.rviz" output="screen">
+</node>
+
+<node pkg = "distributed" name = "config_node" type = "config_4r.py" output="screen">
+</node>
+
+<node pkg = "map_server" name = "map_server" type = "map_server" args="$(find distributed)/maps/map_36_GVD.yaml" output="screen">
+</node>
+
+
+<!--node pkg = "distributed" name = "follow_graph_0" type = "Algorithm_1.py" args="0" output="screen" launch-prefix="xterm -e">
+</node-->
+<!--node pkg = "distributed" name = "follow_graph_1" type = "Algorithm_1.py" args="1" output="screen" launch-prefix="xterm -e">
+</node-->
+<!--node pkg = "distributed" name = "follow_graph_2" type = "Algorithm_1.py" args="2" output="screen" launch-prefix="xterm -e">
+</node-->
+<!--node pkg = "distributed" name = "follow_graph_3" type = "Algorithm_1.py" args="3" output="screen" launch-prefix="xterm -e">
+</node-->
+
+<node pkg = "distributed" name = "sensor_simulator" type = "sensor_simulator.py" output="screen">
+</node>
+
+<!--SPS = [41 69 6 16 50 25 8 44 34 55 51 74 43 24 57 13 18 17 31 71] -->
+<!--node pkg = "distributed" name = "time_couter" type = "Count_time.py" args="45" output="screen">
+</node-->
+
+
+
+</launch>

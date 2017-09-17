@@ -478,7 +478,8 @@ def config():
     freq = 10.0  # Hz
     rate = rospy.Rate(freq)
 
-    p = [2*pi*i/50.0 for i in range(50)]
+    p = [2 * pi * i / 50.0 for i in range(50)]
+    #p = [2 * pi * i / 100.0 for i in range(100)]
     R = 2.5
     #circ_x0 = np.matrix([R*cos(i) for i in p])
     #circ_y0 = np.matrix([R*sin(i) for i in p])

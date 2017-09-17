@@ -23,6 +23,7 @@ nr_1 = [489.8;
 348.6;
 139.9];
 
+
 nr_2 = [123.5;
 225.8;
 322.4;
@@ -43,6 +44,7 @@ nr_2 = [123.5;
 88.1;
 93.1;
 117.5];
+meet_2_ = [1 1 1 0 1 0 0 1 1 1 1 1 1 0 0 1 1 1 1 0];
 
 nr_3 = [100.4;
 34.2;
@@ -65,6 +67,7 @@ nr_3 = [100.4;
 149.5;
 74.6;
 ];
+meet_3_ = [1 0 2 1 3 2 1 3 0 2 3 0 1 3 3 0 3 2 2 2];
 
 nr_4 = [9.5;
 102.2;
@@ -86,7 +89,7 @@ nr_4 = [9.5;
 66.5;
 48.4
 230.1];
-
+meet_4_ = [0 3 3 4 4 6 3 5 0 0 2 0 3 4 2 4 3 3 1 9];
 
 % mean(nr_1)
 % mean(nr_2)
@@ -98,10 +101,12 @@ figure(2)
 x = [nr_1,nr_2,nr_3,nr_4];
 boxplot(x,'Labels',{'M = 1','M = 2','M = 3','M = 4'})
 
-title('Variation depot points','FontSize',15)
+title('Variation of depot points','FontSize',15)
 % xlabel('Number of robots','FontSize',15)
 ylabel('Time (s)','FontSize',15)
 % grid on
 
-
+mean([meet_2 meet_2_])
+mean([meet_3 meet_3_])
+mean([meet_4 meet_4_])
 

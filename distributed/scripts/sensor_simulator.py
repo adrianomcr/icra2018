@@ -34,8 +34,21 @@ global rho # Radius of communication
 rho = 4
 global DIST_INTO # Radius to enter in the communication graph
 global DIST_LEAVE # Radius to leave the communication graph
+
+
+
+
+
+#DIST_INTO = -0.5
+#DIST_LEAVE = 30.0
+#DIST_INTO = 1.5
+#DIST_LEAVE = 3.0
 DIST_INTO = 2.5
 DIST_LEAVE = 5.5
+#DIST_INTO = 3.5
+#DIST_LEAVE = 4.5
+#DIST_INTO = 4.5
+#DIST_LEAVE = 5.5
 
 global flag_0, flag_1, flag_3
 flag_0 = 0
@@ -154,6 +167,7 @@ def callback_hist_0(data):
     H_0['nextNode'] = data.nextNode
     H_0['pose'] = data.pose
     H_0['lastMeeting'] = list(data.lastMeeting)
+    H_0['Whole_path'] = list(data.Whole_path)
 
     return
 # ----------  ----------  ----------  ----------  ----------
@@ -172,6 +186,7 @@ def callback_hist_1(data):
     H_1['nextNode'] = data.nextNode
     H_1['pose'] = data.pose
     H_1['lastMeeting'] = list(data.lastMeeting)
+    H_1['Whole_path'] = list(data.Whole_path)
 
     return
 # ----------  ----------  ----------  ----------  ----------
@@ -190,6 +205,7 @@ def callback_hist_2(data):
     H_2['nextNode'] = data.nextNode
     H_2['pose'] = data.pose
     H_2['lastMeeting'] = list(data.lastMeeting)
+    H_2['Whole_path'] = list(data.Whole_path)
 
     return
 # ----------  ----------  ----------  ----------  ----------
@@ -208,6 +224,7 @@ def callback_hist_3(data):
     H_3['nextNode'] = data.nextNode
     H_3['pose'] = data.pose
     H_3['lastMeeting'] = list(data.lastMeeting)
+    H_3['Whole_path'] = list(data.Whole_path)
 
     return
 # ----------  ----------  ----------  ----------  ----------
@@ -242,8 +259,8 @@ def send_message_recompute_close(pub_comm_graph, ids):
         H_A = H_2
         H_B = H_3
 
-    print "H_A['lastMeeting'] = ", H_A['lastMeeting']
-    print "H_B['lastMeeting'] = ", H_B['lastMeeting']
+    #print "H_A['lastMeeting'] = ", H_A['lastMeeting']
+    #print "H_B['lastMeeting'] = ", H_B['lastMeeting']
 
     #if (H_0['lastMeeting'] != H_1['lastMeeting'] or H_0['lastMeeting'] == []):  # Check if there is new information
     if (H_A['lastMeeting'] != H_B['lastMeeting'] or H_A['lastMeeting'] == []):  # Check if there is new information
@@ -266,7 +283,8 @@ def send_message_recompute_close(pub_comm_graph, ids):
         H.pose = H_A['pose']
         #H.lastMeeting = H_A['lastMeeting']
         H.lastMeeting = copy.deepcopy(ids)
-        print "H.lastMeeting = ids", H.lastMeeting
+        H.Whole_path = H_A['Whole_path']
+        #print "H.lastMeeting = ids", H.lastMeeting
         HL.robList.append(H_A['id'])
         # HL.velocityList.append(0.4)
         HL.listOfH.append(H)
@@ -285,7 +303,8 @@ def send_message_recompute_close(pub_comm_graph, ids):
         H.pose = H_B['pose']
         #H.lastMeeting = H_B['lastMeeting']
         H.lastMeeting = copy.deepcopy(ids)
-        print "H.lastMeeting = ids", H.lastMeeting
+        H.Whole_path = H_B['Whole_path']
+        #print "H.lastMeeting = ids", H.lastMeeting
         HL.robList.append(H_B['id'])
         # HL.velocityList.append(0.55)
         HL.listOfH.append(H)
@@ -323,7 +342,8 @@ def sensor_simulator():
          'T_a': [],
          'T_f': [],
          'currEdge': None,
-         'lastMeeting': []
+         'lastMeeting': [],
+         'Whole_path': []
     }
     H_1 = {'id': [],
          'specs': [],
@@ -333,7 +353,8 @@ def sensor_simulator():
          'T_a': [],
          'T_f': [],
          'currEdge': None,
-         'lastMeeting': []
+         'lastMeeting': [],
+         'Whole_path': []
     }
     H_2 = {'id': [],
          'specs': [],
@@ -343,7 +364,8 @@ def sensor_simulator():
          'T_a': [],
          'T_f': [],
          'currEdge': None,
-         'lastMeeting': []
+         'lastMeeting': [],
+         'Whole_path': []
     }
     H_3 = {'id': [],
          'specs': [],
@@ -353,7 +375,8 @@ def sensor_simulator():
          'T_a': [],
          'T_f': [],
          'currEdge': None,
-         'lastMeeting': []
+         'lastMeeting': [],
+          'Whole_path': []
     }
 
 
