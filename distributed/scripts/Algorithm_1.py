@@ -28,6 +28,7 @@ import cppsolver
 import library2018 as myLib
 import Algorithm_2 as Alg2
 
+global vel, pub_stage, pub_broadcast, change_plan, Hole_path_list, new_Hists, original_graph,virtual_graph,list_of_H, list_of_robs
 
 
 global SP # search points
@@ -52,6 +53,9 @@ replan_tasks = False
 global e_v, e_uv, e_g
 global T_a, T_f
 global H, H_new
+
+
+
 
 # Callback routine to obtain the robot's pose
 def callback_pose(data):
@@ -124,6 +128,41 @@ def callback_comm_graph(data):
             print "\nHere is listOfH[1]:"
             print data.listOfH[1]
             """
+
+
+
+        #THIS IS A COMPUTATION OF A NEW PLAN INSIDE A CALBACK FUNCTION
+        #THE NEW PLAN IS COMPUTED AS A THREAD
+        global vel, pub_stage, pub_broadcast, change_plan, Hole_path_list, new_Hists, original_graph,virtual_graph,list_of_H, list_of_robs
+        if (id == min(list_of_robs)):
+            # Compute the new routes if the current robot has munimum index
+            # Stop the robot
+            VX, WZ = 0, 0
+            vel.linear.x, vel.angular.z = VX, WZ
+            pub_stage.publish(vel)
+
+            # Call the replanning function (Algorithm 2)
+            change_plan, Hole_path_list, new_Hists = Alg2.replanning(original_graph,virtual_graph,list_of_H)
+            pylab.close("all")
+
+            #Broadcast new plan to other robots
+            print '\nCreating Broadcast message ...\n'
+            B = Broadcast()
+            B.sender = id
+            R = len(new_Hists)
+            B.destinations = []
+            for r in range(R):
+                B.destinations.append(new_Hists[r].id)
+            for r in range(R):
+                IL = Intlist()
+                IL.data = list(Hole_path_list[r])
+                B.new_Hole_paths.append(IL)
+            B.listOfH = new_Hists
+
+            print 'New plan broadcasted'
+            waitting_new_plan = True
+            pub_broadcast.publish(B)
+
 
     return
 # ----------  ----------  ----------  ----------  ----------
@@ -241,6 +280,7 @@ def Algorithm_1():
     global original_graph
     global SP, SP_fix
     global new_plan_flag
+    global vel, pub_stage, pub_broadcast, change_plan, Hole_path_list, new_Hists, original_graph, virtual_graph, list_of_H, list_of_robs
 
     new_plan_flag = False
 
@@ -327,7 +367,8 @@ def Algorithm_1():
                     if change_edge:
                         finish_edge = True
                         print '\nEdge finished\n'
-                        vel.linear.x, vel.angular.z = 0, 0
+                        VX, WZ = 0, 0
+                        vel.linear.x, vel.angular.z = VX, WZ
                         pub_stage.publish(vel)
                         """
                         if new_plan_flag:
@@ -341,6 +382,9 @@ def Algorithm_1():
                 else:
                     # When the edge is finished check the ID to see if the current robot has munimum index
                     if (id == min(list_of_robs)):
+
+                        # THIS NEW PLAN COMPUTATION WAS TRANSFERED TO INSIDE OF THE CALBACK FUNCTION
+                        """
                         # Compute the new routes if the current robot has munimum index
                         # Stop the robot
                         VX, WZ = 0, 0
@@ -368,6 +412,9 @@ def Algorithm_1():
                         print 'New plan broadcasted'
                         waitting_new_plan = True
                         pub_broadcast.publish(B)
+                        
+                        """
+                        a = 1
 
                     else:
 
@@ -442,13 +489,8 @@ def Algorithm_1():
             #change_edge = False
             H = copy.deepcopy(H_new)
             Hole_path = copy.deepcopy(Hole_path_new)
-            #print "AAAAAAAAAAAAAAAAAAAAAA"
-            #print "AAAAAAAAAAAAAAAAAAAAAA"
-            #print "AAAAAAAAAAAAAAAAAAAAAA"
-            #print "AAAAAAAAAAAAAAAAAAAAAA"
-            #print "AAAAAAAAAAAAAAAAAAAAAA"
-            #print "AAAAAAAAAAAAAAAAAAAAAA"
-            #print "AAAAAAAAAAAAAAAAAAAAAA"
+            # print "AAAAAAAAAAAAAAAAAAAAAA"
+            # print "AAAAAAAAAAAAAAAAAAAAAA"
             waitting_new_plan = False
             replan_tasks = False
             new_task = 1
