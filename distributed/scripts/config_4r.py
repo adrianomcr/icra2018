@@ -11,6 +11,7 @@ import numpy as np
 from random import randrange
 from time import sleep
 import tf
+import sys
 
 global x_n, y_n, theta_n
 x_n = 0.1  # posicao x atual do robo
@@ -29,7 +30,11 @@ x_n3 = 0.1  # posicao x atual do robo
 y_n3 = 0.2  # posicao y atual do robo
 theta_n3 = 0.001  # orientacao atual do robo
 
-
+global Targ_pos #Position of the 20 targets
+Targ_pos = [[6.391, 5.697], [1.529, 8.435], [6.752, 9.117], [10.371, 8.556], [2.958, 0.381], [9.102, 1.823],
+            [9.036, 8.809], [6.631, 4.508], [9.263, 5.791], [2.784, 2.411], [2.223, 1.970], [2.116, 6.592],
+            [5.055, 5.644], [9.824, 2.064], [3.973, 4.468], [11.120, 8.983], [11.347, 5.751], [9.824, 6.819],
+            [9.383, 3.667], [0.340, 6.525]]
 
 
 # Rotina callback para a obtencao da pose do robo
@@ -172,6 +177,7 @@ def send_marker_to_rviz():
     global pub_pose1
     global pub_pose2
     global pub_pose3
+    global pub_targ
 
 
 
@@ -276,6 +282,33 @@ def send_marker_to_rviz():
     mark_pose3.pose.orientation.w = quaternio[3]
 
     pub_pose3.publish(mark_pose3)
+
+
+    # ----------  ----------  ----------
+
+    mark_targ = Marker()
+    mark_targ.header.frame_id = "world"
+    mark_targ.header.stamp = rospy.Time.now()
+    mark_targ.id = 0
+    mark_targ.type = mark_targ.SPHERE
+    mark_targ.action = mark_targ.ADD
+    mark_targ.scale.x = 0.20
+    mark_targ.scale.y = 0.20
+    mark_targ.scale.z = 0.20
+    mark_targ.color.a = 1.0
+    mark_targ.color.r = 1.0
+    mark_targ.color.g = 1.0
+    mark_targ.color.b = 1.0
+    mark_targ.pose.position.x = Targ_pos[0]
+    mark_targ.pose.position.y = Targ_pos[1]
+    mark_targ.pose.position.z = 0.0
+    quaternio = quaternion_from_euler(0, 0, 0)
+    mark_targ.pose.orientation.x = quaternio[0]
+    mark_targ.pose.orientation.y = quaternio[1]
+    mark_targ.pose.orientation.z = quaternio[2]
+    mark_targ.pose.orientation.w = quaternio[3]
+
+    pub_targ.publish(mark_targ)
 
     return
 
@@ -441,7 +474,7 @@ def send_comm_range_to_rviz(circ_x0,circ_y0):
 # Rotina primaria
 def config():
     global x_n, y_n, theta_n
-    global pub_pose, pub_pose1, pub_pose2, pub_pose3
+    global pub_pose, pub_pose1, pub_pose2, pub_pose3, pub_targ
     global freq
 
     vel = Twist()
@@ -463,6 +496,7 @@ def config():
     pub_circ1 = rospy.Publisher("/marker_circ1", MarkerArray, queue_size=1)
     pub_circ2 = rospy.Publisher("/marker_circ2", MarkerArray, queue_size=1)
     pub_circ3 = rospy.Publisher("/marker_circ3", MarkerArray, queue_size=1)
+    pub_targ = rospy.Publisher("/marker_targ", Marker, queue_size=1)
     rospy.init_node("config")
     rospy.Subscriber("/robot_0/base_pose_ground_truth", Odometry, callback_pose)
     rospy.Subscriber("/robot_1/base_pose_ground_truth", Odometry, callback_pose1)
@@ -523,6 +557,17 @@ def config():
 
 # Funcao inicial
 if __name__ == '__main__':
+
+
+
+    #Read the target index
+    if len(sys.argv) < 3:
+        print 'ERROR!!!\nThe target id position was not informed'
+    else:
+        tar_id = int(sys.argv[1])
+
+    Targ_pos = Targ_pos[tar_id]
+
 
     try:
         config()

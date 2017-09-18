@@ -59,7 +59,7 @@ def callback_SP(data):
     FILE.close()
     print 'len(SP_LIST) = ', len(SP_LIST)
 
-    """
+    #"""
     #Choose this to terminate when a given search point is achieved
     if(new_data[0] == id_SP_target):
         print '\n\n----------  ----------  ----------  ----------  ----------  ----------'
@@ -68,12 +68,12 @@ def callback_SP(data):
         sleep(0.5)
         string_cmd = "gnome-terminal -x bash -c 'killall python'"
         os.system(string_cmd)
-    """
+    #"""
 
     global SP_LIST
 
     #"""
-    #Choose this to terminate when all search points are achieved
+    #Choose this to indicate when all search points are achieved
     if new_data[0] in  SP_LIST:
         rm_id = SP_LIST.index(new_data[0])
         SP_LIST.pop(rm_id)

@@ -98,8 +98,24 @@ end
 
 
 
+load('PosTargets_20.mat','x','y')
+hold on
+fprintf('Targ_pos = [')
+for k = 1:1:length(x)
+    plot(x(k),y(k),'.g','MarkerSize',30)
+    fprintf('[%.3f, %.3f]', x(k),y(k))
+    if k ~= length(x)
+        fprintf(', ')
+    end
+end
+fprintf(']\n')
+hold off
 
-
+SPS = [41 69 6 16 50 25 8 44 34 55 51 74 43 24 57 13 18 17 31 71];
+fprintf('Past tgis in the world file\n')
+for k = 1:1:length(x)
+    fprintf('#block( pose [ %.3f %.3f 0 0 ] name "object" color "white") # SP_id: %d\n', x(k),y(k),SPS(k))
+end
 
 
 

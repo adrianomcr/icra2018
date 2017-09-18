@@ -11,6 +11,7 @@ Panels:
         - /Marker1
         - /MarkerArray1
         - /Axes2
+        - /Marker2
       Splitter Ratio: 0.494186
     Tree Height: 719
   - Class: rviz/Selection
@@ -121,6 +122,14 @@ Visualization Manager:
       Name: Axes
       Radius: 0.04
       Reference Frame: robot_0/base_pose_ground_truth
+      Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: /marker_targ
+      Name: Marker
+      Namespaces:
+        "": true
+      Queue Size: 100
       Value: true
   Enabled: true
   Global Options:

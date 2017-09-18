@@ -9,7 +9,7 @@
 <node pkg = "rviz" name = "rviz" type = "rviz" args="-d $(find distributed)/rviz/rviz_config_4r.rviz" output="screen">
 </node>
 
-<node pkg = "distributed" name = "config_node" type = "config_4r.py" output="screen">
+<node pkg = "distributed" name = "config_node" type = "config_4r.py" output="screen" args="0">
 </node>
 
 <node pkg = "map_server" name = "map_server" type = "map_server" args="$(find distributed)/maps/map_36_GVD.yaml" output="screen">
@@ -28,8 +28,9 @@
 <node pkg = "distributed" name = "sensor_simulator" type = "sensor_simulator.py" output="screen">
 </node>
 
-<!--SPS = [41 69 6 16 50 25 8 44 34 55 51 74 43 24 57 13 18 17 31 71] -->
-<!--node pkg = "distributed" name = "time_couter" type = "Count_time.py" args="45" output="screen">
+<!--SPS_ids = [0  1  2 3  4  5  6 7  8  9  10 11 12 13 14 15 16 17 18 19] -->
+<!--SPS     = [41 69 6 16 50 25 8 44 34 55 51 74 43 24 57 13 18 17 31 71] -->
+<!--node pkg = "distributed" name = "time_couter" type = "Count_time.py" args="41" output="screen">
 </node-->
 
 

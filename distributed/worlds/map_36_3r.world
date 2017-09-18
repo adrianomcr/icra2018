@@ -1,6 +1,6 @@
 define block model
 (
-  size [0.500 0.500 0.500]
+  size [0.200 0.200 0.200]
   gui_nose 0
 )
 
@@ -99,6 +99,29 @@ floorplan
 erratic( pose [ 0.4800   10.4200 0.000 1.496 ] name "robot_0" color "blue") #node 1
 erratic( pose [ 11.4000    0.4600 0.000 115.050 ] name "robot_1" color "red") #node 30
 erratic( pose [ 0.4755    0.4883 0.000 -20.050 ] name "robot_2" color "green") #node 33
+
+
+#SELECT HERE THE POSITION OF THE TARGET ON STAGE
+block( pose [ 6.391 5.697 0 0 ] name "object" color "white") # SP_id: 41
+#block( pose [ 1.529 8.435 0 0 ] name "object" color "white") # SP_id: 69
+#block( pose [ 6.752 9.117 0 0 ] name "object" color "white") # SP_id: 6
+#block( pose [ 10.371 8.556 0 0 ] name "object" color "white") # SP_id: 16
+#block( pose [ 2.958 0.381 0 0 ] name "object" color "white") # SP_id: 50
+#block( pose [ 9.102 1.823 0 0 ] name "object" color "white") # SP_id: 25
+#block( pose [ 9.036 8.809 0 0 ] name "object" color "white") # SP_id: 8
+#block( pose [ 6.631 4.508 0 0 ] name "object" color "white") # SP_id: 44
+#block( pose [ 9.263 5.791 0 0 ] name "object" color "white") # SP_id: 34
+#block( pose [ 2.784 2.411 0 0 ] name "object" color "white") # SP_id: 55
+#block( pose [ 2.223 1.970 0 0 ] name "object" color "white") # SP_id: 51
+#block( pose [ 2.116 6.592 0 0 ] name "object" color "white") # SP_id: 74
+#block( pose [ 5.055 5.644 0 0 ] name "object" color "white") # SP_id: 43
+#block( pose [ 9.824 2.064 0 0 ] name "object" color "white") # SP_id: 24
+#block( pose [ 3.973 4.468 0 0 ] name "object" color "white") # SP_id: 57
+#block( pose [ 11.120 8.983 0 0 ] name "object" color "white") # SP_id: 13
+#block( pose [ 11.347 5.751 0 0 ] name "object" color "white") # SP_id: 18
+#block( pose [ 9.824 6.819 0 0 ] name "object" color "white") # SP_id: 17
+#block( pose [ 9.383 3.667 0 0 ] name "object" color "white") # SP_id: 31
+#block( pose [ 0.340 6.525 0 0 ] name "object" color "white") # SP_id: 71
 
 
 #Set 1
